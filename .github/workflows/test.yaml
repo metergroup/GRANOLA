@@ -5,7 +5,6 @@ name: CI
 # Controls when the workflow will run
 on:
   - push
-    - main
   - pull_request
 
 jobs:
