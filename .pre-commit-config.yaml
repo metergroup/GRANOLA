@@ -1,11 +1,24 @@
 
 
 repos:
+  - repo: https://github.com/psf/black
+    rev: 21.12b0
+    hooks:
+      - id: black
+        language_version: python3.7
+        stages: [commit]
+        args: [--py36-plus]
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.10.0
+    hooks:
+      - id: isort
+        language_version: python3.7
+        stages: [commit]
   - repo: https://gitlab.com/PyCQA/flake8
     rev: 3.9.2
     hooks:
       - id: flake8
-        language_version: python2.7
+        language_version: python3.7
         stages: [commit]
   - repo: local
     hooks:
