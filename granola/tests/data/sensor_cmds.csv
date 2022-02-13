@@ -1,0 +1,8 @@
+cmd,response
+sdicmd 1 a\r, 1 500\r\n\r>
+sdicmd 1 b\r, 1 600r\n\r>
+sdicmd 1 c\r, 1 g\r\n\r>
+sdicmd 1 d\r, 1 OK\r\n\r>
+sdicmd 1 e\r, 1 Good\r\n\r>
+sdicmd 1 f\r, 1 sn00022503\r\n\r>
+sdicmd 1 g\r, 1 5142F2B60014000C\r\n\r>

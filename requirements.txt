@@ -1,0 +1,3 @@
+# install package in editable locally from setup.cfg dependencies
+# To add more dependencies, add them inside setup.cfg in install_requires
+-e .

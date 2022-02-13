@@ -1,0 +1,16 @@
+[run]
+omit =
+    # omit anything that looks like a virtual env anywhere
+    */*env*/*
+
+    # omit test directory
+    */tests/*
+
+    # omit versioning tools
+    ./granola/_version.py
+
+    # omit granola init
+    ./granola/__init__.py
+
+include =
+    granola/*

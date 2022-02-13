@@ -1,0 +1,2 @@
+include versioneer.py
+include granola/_version.py

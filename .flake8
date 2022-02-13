@@ -1,0 +1,18 @@
+[flake8]
+# Some like to bend the rules :)
+# E722: bare 'except'
+# W503: line break before bin operator (W504: after binary operator. flake8 lets us decide)
+ignore = E722, W503
+
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    venv*,
+    env*,
+    .venv,
+    granola/_version.py,
+    versioneer.py
+
+max-line-length = 120

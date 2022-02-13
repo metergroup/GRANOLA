@@ -1,0 +1,18 @@
+{
+  "fake device": {
+    "canned_queries": {"data": {"`DEFAULT`": "granola\\tests\\data\\cereal_cmds.csv"}},
+    "encoding": "ascii",
+    "getters_and_setters": {
+        "default_values": {
+            "my_value": "You got it"
+        },
+        "getters": [
+            {
+                "cmd": "get -my value\r",
+                "response": "{{ my_value }}"
+            }
+        ],
+        "setters":[]
+    }
+  }
+}
