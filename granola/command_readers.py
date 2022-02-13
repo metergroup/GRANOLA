@@ -14,7 +14,7 @@ import attr
 import pandas as pd
 from pathlib import Path
 
-from granola.utils import (load_serial_df, fixpath, IS_PYTHON3, SENTINEL, ABC, deprecation)
+from granola.utils import load_serial_df, fixpath, IS_PYTHON3, SENTINEL, ABC, deprecation
 from granola.hooks.base_hook import BaseHook, wrap_in_hooks
 
 
@@ -31,6 +31,7 @@ DeprecatedDefaultDF = "_default_csv_"  # Default dataframe key
 
 class RandomizeResponse(Enum):
     """Randomize response enum"""
+
     not_randomized = auto()  # Don't randomize
     randomized = auto()  # Randomize and replace
     randomized_and_remove = auto()  # Randomize and remove
@@ -58,7 +59,10 @@ class SerialCmds(object):
     """
 
     data = attr.ib(type=pd.DataFrame)
-    will_randomize_responses = attr.ib(type=RandomizeResponse, default=RandomizeResponse.not_randomized,)
+    will_randomize_responses = attr.ib(
+        type=RandomizeResponse,
+        default=RandomizeResponse.not_randomized,
+    )
 
     @classmethod
     def from_file(cls, file, config_path=None, extra_fields=None):
@@ -131,16 +135,21 @@ class SerialCmds(object):
                                 raise KeyError(
                                     "Extra Fields cannot be specified for both individual commands, and as a list."
                                     "\nEither specify a extra field for individual commands"
-                                    " or as a list the same length as your command responses.")
+                                    " or as a list the same length as your command responses."
+                                )
 
                     response_ = resp
-                    extra_fields_ = {key: val[index] if isinstance(val, (list, tuple)) else val
-                                     for key, val in inner_extra_fields.items()}
+                    extra_fields_ = {
+                        key: val[index] if isinstance(val, (list, tuple)) else val
+                        for key, val in inner_extra_fields.items()
+                    }
                     extra_fields_.update(ex_fields)
                 elif isinstance(item, (str, int, float)):
                     response_ = item
-                    extra_fields_ = {key: val[index] if isinstance(val, (list, tuple)) else val
-                                     for key, val in inner_extra_fields.items()}
+                    extra_fields_ = {
+                        key: val[index] if isinstance(val, (list, tuple)) else val
+                        for key, val in inner_extra_fields.items()
+                    }
                 else:
                     raise ValueError("Invalid JSON format for canned_queries")
                 cls._append_to_list_of_rows(data, cmd, response_, **extra_fields_)
@@ -207,6 +216,7 @@ class BaseCommandReaders(ABC):
         pre_hooks (list or tuple): iterable of hooks to run before `get_readings`
         post_hooks (list or tuple): iterable of hooks to run after `get_readings`
     """
+
     _hooks = attr.ib(type=BaseHook, default=attr.Factory(list))
 
     _config = attr.ib(type=dict, init=False)
@@ -299,9 +309,11 @@ class GettersAndSetters(BaseCommandReaders):
         super(GettersAndSetters, self).initialize_config(config, config_path)
         self._variable_start_string = config.get("getters_and_setters", {}).get("variable_start_string", "{{")
         self._variable_end_string = config.get("getters_and_setters", {}).get("variable_end_string", "}}")
-        self.jinja_env = jinja2.Environment(variable_start_string=self._variable_start_string,
-                                            variable_end_string=self._variable_end_string,
-                                            loader=jinja2.BaseLoader())
+        self.jinja_env = jinja2.Environment(
+            variable_start_string=self._variable_start_string,
+            variable_end_string=self._variable_end_string,
+            loader=jinja2.BaseLoader(),
+        )
 
         self._load_getters_and_setters()
 
@@ -329,8 +341,10 @@ class GettersAndSetters(BaseCommandReaders):
 
     @property
     def attribute_vals(self):
-        attribute_vals = {attribute: instrument_attribute.value for attribute, instrument_attribute
-                          in self.instrument_attributes.items()}
+        attribute_vals = {
+            attribute: instrument_attribute.value
+            for attribute, instrument_attribute in self.instrument_attributes.items()
+        }
         return attribute_vals
 
     def render_template(self, string, attribute_vals=None):
@@ -361,10 +375,12 @@ class GettersAndSetters(BaseCommandReaders):
         does not get an attribute in self.instrument_attributes, raise Value Error"""
         for getter in getters_and_setters.get("getters", {}):
             if "getter" in getter:
-                deprecation("Using 'getter' key inside 'getter_and_setters'"
-                            "(config['getters_and_setters']['getters']['getter']"
-                            "is deprecated and will be removed in a future release."
-                            "\nSwitch to using the key 'cmd' instead.")
+                deprecation(
+                    "Using 'getter' key inside 'getter_and_setters'"
+                    "(config['getters_and_setters']['getters']['getter']"
+                    "is deprecated and will be removed in a future release."
+                    "\nSwitch to using the key 'cmd' instead."
+                )
                 getter["cmd"] = getter.pop("getter")
 
             self._check_attributes_are_valid("getters", getter)
@@ -377,18 +393,19 @@ class GettersAndSetters(BaseCommandReaders):
         does not get an attribute in self.instrument_attributes, raise Value Error"""
         for setter in getters_and_setters.get("setters", {}):
             if "setter" in setter:
-                deprecation("Using 'setter' key inside 'getter_and_setters'"
-                            "(config['getters_and_setters']['setters']['setter']"
-                            "is deprecated and will be removed in a future release."
-                            "\nSwitch to using the key 'cmd' instead.")
+                deprecation(
+                    "Using 'setter' key inside 'getter_and_setters'"
+                    "(config['getters_and_setters']['setters']['setter']"
+                    "is deprecated and will be removed in a future release."
+                    "\nSwitch to using the key 'cmd' instead."
+                )
                 setter["cmd"] = setter.pop("setter")
             self._check_attributes_are_valid("setters", setter)
 
-            regex = '{variable_start}(.*?){variable_end}'.format(variable_start=self._variable_start_string,
-                                                                 variable_end=self._variable_end_string)
-            setter_regex = re.sub(regex,
-                                  self._format_match_group,
-                                  setter["cmd"])
+            regex = "{variable_start}(.*?){variable_end}".format(
+                variable_start=self._variable_start_string, variable_end=self._variable_end_string
+            )
+            setter_regex = re.sub(regex, self._format_match_group, setter["cmd"])
             self.setters[setter_regex] = setter["response"]
 
     def _format_match_group(self, match):
@@ -396,7 +413,13 @@ class GettersAndSetters(BaseCommandReaders):
         Get and format match group. Default formatters create named match groups to
         extract the match group by the name of the attribute later for easier book keeping."""
         group = match.group(0)
-        group = group.strip(self._variable_start_string).strip(self._variable_end_string,).strip()
+        group = (
+            group.strip(self._variable_start_string)
+            .strip(
+                self._variable_end_string,
+            )
+            .strip()
+        )
         group = "(?P<{group}>.*)".format(group=group)
         return group
 
@@ -451,8 +474,10 @@ class GettersAndSetters(BaseCommandReaders):
                     raise ValueError(
                         "{attribute_type} attribute {attribute} not found in default_values."
                         "\nMake sure you initialize all values!"
-                        "\nProblem string: {template_string}"
-                        .format(attribute_type=attribute_type, attribute=attribute, template_string=template))
+                        "\nProblem string: {template_string}".format(
+                            attribute_type=attribute_type, attribute=attribute, template_string=template
+                        )
+                    )
 
 
 @attr.s
@@ -552,8 +577,8 @@ class CannedQueries(BaseCommandReaders):
     def _seed_serial_dfs(self):
         if self._config.get("canned_queries"):
             self.serial_dfs = OrderedDict(
-                (key, serial_cmd_file.data)
-                for key, serial_cmd_file in self.serial_cmd_files.items())
+                (key, serial_cmd_file.data) for key, serial_cmd_file in self.serial_cmd_files.items()
+            )
         else:
             self.serial_dfs[DefaultDF] = pd.DataFrame(columns=["cmd", "response"])
 
@@ -615,8 +640,10 @@ class CannedQueries(BaseCommandReaders):
         if serial_cmd_file.will_randomize_responses == RandomizeResponse.not_randomized:
             for _, rows in df.iterrows():
                 yield rows["response"]
-        if (serial_cmd_file.will_randomize_responses == RandomizeResponse.randomized
-                or serial_cmd_file.will_randomize_responses == RandomizeResponse.randomized_and_remove):
+        if (
+            serial_cmd_file.will_randomize_responses == RandomizeResponse.randomized
+            or serial_cmd_file.will_randomize_responses == RandomizeResponse.randomized_and_remove
+        ):
             while df.shape[0] > 0:
                 df_length = df.shape[0]
                 row = random.randint(0, df_length - 1)
@@ -626,12 +653,11 @@ class CannedQueries(BaseCommandReaders):
 
 
 config = {
-    "getters_and_setters": {"default_values": {"sn": "42"},
-                            "getters": [{"cmd": "get -sn\r",
-                                         "response": "`sn`\r>"}],
-                            "setters": [{"cmd": "set -sn `sn`\r",
-                                         "response": "OK\r>"}],
-                            "variable_start_string": "`",
-                            "variable_end_string": "`"
-                            }
+    "getters_and_setters": {
+        "default_values": {"sn": "42"},
+        "getters": [{"cmd": "get -sn\r", "response": "`sn`\r>"}],
+        "setters": [{"cmd": "set -sn `sn`\r", "response": "OK\r>"}],
+        "variable_start_string": "`",
+        "variable_end_string": "`",
+    }
 }

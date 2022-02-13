@@ -6,3 +6,5 @@ flake8
 myst-parser;python_version>"3"  # not available on python 2, sphinx should be ran on py 3
 sphinx;python_version>"3"
 sphinx-rtd-theme;python_version>"3"
+black<=21.12b0;python_version>"3"
+isort

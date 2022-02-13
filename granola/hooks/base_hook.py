@@ -77,6 +77,7 @@ def register_hook(hook_type_enum, hooked_classes):  # TODO madeline allow passin
                 return func(**kws)
             if "result" in kwargs:
                 return kwargs["result"]
+
         # Copy over original function meta data to new class (in desired place, so functools doesn't work exactly)
         hook.__doc__ = func.__doc__
         RegisteredHook.__module__ = func.__module__
@@ -85,6 +86,7 @@ def register_hook(hook_type_enum, hooked_classes):  # TODO madeline allow passin
         setattr(RegisteredHook, hook_type, hook)
 
         return RegisteredHook
+
     return _register_hook
 
 
@@ -108,12 +110,14 @@ def wrap_in_hooks(func):
         result (str): Passed in result to potentially modify.
         data (str): Serial command.
     """
+
     @functools.wraps(func)
     def wrapper(hooked, data, **kwargs):
         _run_pre_reading_hooks(hooked=hooked, data=data, **kwargs)
         result = func(hooked, data, **kwargs)
         result = _run_post_reading_hooks(hooked=hooked, result=result, data=data, **kwargs)
         return result
+
     return wrapper
 
 

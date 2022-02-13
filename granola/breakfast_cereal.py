@@ -11,9 +11,20 @@ from granola.command_readers import GettersAndSetters, CannedQueries, BaseComman
 from granola.hooks.base_hook import _run_pre_reading_hooks, _run_post_reading_hooks
 from granola.hooks.base_hook import BaseHook
 from granola.hooks.hooks import LoopCannedQueries
-from granola.utils import (SENTINEL, decode_bytes, encode_to_bytes, fixpath, get_path, _get_subclasses,
-                           check_min_package_version, add_created_at, is_terminated_with, IS_PYTHON3,
-                           deunicodify_hook, deprecation)
+from granola.utils import (
+    SENTINEL,
+    decode_bytes,
+    encode_to_bytes,
+    fixpath,
+    get_path,
+    _get_subclasses,
+    check_min_package_version,
+    add_created_at,
+    is_terminated_with,
+    IS_PYTHON3,
+    deunicodify_hook,
+    deprecation,
+)
 
 try:
     from serial import PortNotOpenError  # for newer versions of pyserial
@@ -202,6 +213,7 @@ class Cereal(Serial):
         return len(data)
 
     if check_min_package_version("pyserial", "3.0"):
+
         def reset_input_buffer(self):
             """
             A wrapper for serial.reset_input_buffer that also clears the current read buffer.
@@ -223,7 +235,9 @@ class Cereal(Serial):
         def out_waiting(self):
             """mocking pyserial's out_waiting"""
             return self._out_waiting
+
     else:
+
         def flushInput(self):
             """
             A wrapper for serial.FlushInput that also clears the current read buffer.
@@ -324,6 +338,7 @@ class Cereal(Serial):
             baseclass (class): Class to check all subclasses of when you know the class name from
                 ``subkey``
         """
+
         def _inner(self):
             config_options = self._config.get(key, [])
             subclasses = _get_subclasses(baseclass)
@@ -336,20 +351,24 @@ class Cereal(Serial):
                     c = subclasses[cls]()
                 classes.append(c)
             return classes
+
         return _inner
 
     _read_file_config_hooks = _read_file_config_from_classes("hooks", "hook_type", BaseHook)
 
-    _read_file_config_command_readers = _read_file_config_from_classes("command_readers", "reader_type",
-                                                                       BaseCommandReaders)
+    _read_file_config_command_readers = _read_file_config_from_classes(
+        "command_readers", "reader_type", BaseCommandReaders
+    )
 
     def _check_and_normalize_config_deprecation(self, config, config_key):
         if isinstance(config, str):
             config_key = config
         if config_key is not None:
-            deprecation("Instantiating Cereal with `config_path` and `config_key` is deprecated"
-                        " and will be removed in a future release."
-                        "\nPlease use `Cereal.mock_from_file(config_key, config_path)` instead")
+            deprecation(
+                "Instantiating Cereal with `config_path` and `config_key` is deprecated"
+                " and will be removed in a future release."
+                "\nPlease use `Cereal.mock_from_file(config_key, config_path)` instead"
+            )
             config = self._load_config(config_key=config_key, config_path=self._config_path)
 
             # Check for old form of variable substitution pre jinja
@@ -357,11 +376,13 @@ class Cereal(Serial):
             start_not_in = "variable_start_string" not in getters_and_setters
             end_not_in = "variable_end_string" not in getters_and_setters
             if getters_and_setters and start_not_in and end_not_in:
-                deprecation("'getters_and_setters' variable declaration follows old format"
-                            " that will be removed in a future release."
-                            "\nEither switch to traditional jinja2 formatting ({{ var }})"
-                            "\nor specify explicitly your variable_start_string and variable_end_string inside"
-                            " getters and setters (ex: 'variable_start_string': '`')")
+                deprecation(
+                    "'getters_and_setters' variable declaration follows old format"
+                    " that will be removed in a future release."
+                    "\nEither switch to traditional jinja2 formatting ({{ var }})"
+                    "\nor specify explicitly your variable_start_string and variable_end_string inside"
+                    " getters and setters (ex: 'variable_start_string': '`')"
+                )
                 getters_and_setters["variable_start_string"] = "`"
                 getters_and_setters["variable_end_string"] = "`"
 

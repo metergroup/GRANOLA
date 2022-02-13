@@ -37,10 +37,16 @@ class ApproachHook(BaseHook):
             longer to transition. Must be
             negative.
     """
+
     hooked_classes = [GettersAndSetters]
 
-    def __init__(self, attributes=None, include_or_exclude=SetRelationship.exclude,
-                 transition_asc_scaling=40, transition_dsc_scaling=100):
+    def __init__(
+        self,
+        attributes=None,
+        include_or_exclude=SetRelationship.exclude,
+        transition_asc_scaling=40,
+        transition_dsc_scaling=100,
+    ):
         super(ApproachHook, self).__init__(attributes=attributes, include_or_exclude=include_or_exclude)
         self.transition_asc_scaling = transition_asc_scaling
         self.transition_dsc_scaling = transition_dsc_scaling
@@ -77,13 +83,12 @@ class ApproachHook(BaseHook):
         if data in hooked.getters:
             attribute_vals = hooked.attribute_vals
             for attribute in attribute_vals:
-                attrib = hooked.instrument_attributes[attribute].meta_data.get(
-                    _ApproachHookAttributes.__name__)
+                attrib = hooked.instrument_attributes[attribute].meta_data.get(_ApproachHookAttributes.__name__)
                 if attrib:
                     seconds_ran = time.time() - attrib.set_time
-                    value = (attrib.start_value
-                             + 0.5 * (1 + np.tanh(6 * seconds_ran / attrib.transition_time - pi))
-                             * (attrib.end_value - attrib.start_value))
+                    value = attrib.start_value + 0.5 * (1 + np.tanh(6 * seconds_ran / attrib.transition_time - pi)) * (
+                        attrib.end_value - attrib.start_value
+                    )
                     attribute_vals[attribute] = value
 
             result = hooked.render_template(hooked.getters[data], attribute_vals)
@@ -106,13 +111,14 @@ class ApproachHook(BaseHook):
 
                 self.validate_attribute_type(hooked, attribute)
 
-                attrib = _ApproachHookAttributes(start_value=hooked.instrument_attributes[attribute].value,
-                                                 end_value=end_value,
-                                                 set_time=time.time())
+                attrib = _ApproachHookAttributes(
+                    start_value=hooked.instrument_attributes[attribute].value, end_value=end_value, set_time=time.time()
+                )
 
                 delta = attrib.end_value - attrib.start_value
-                transition_time = (delta * self.transition_asc_scaling if delta >= 0
-                                   else delta * self.transition_dsc_scaling)
+                transition_time = (
+                    delta * self.transition_asc_scaling if delta >= 0 else delta * self.transition_dsc_scaling
+                )
                 attrib.transition_time = transition_time
 
                 hooked.instrument_attributes[attribute].meta_data[_ApproachHookAttributes.__name__] = attrib
@@ -122,8 +128,9 @@ class ApproachHook(BaseHook):
         try:
             float(hooked.instrument_attributes[attribute].value)
         except ValueError:
-            raise ValueError("ApproachHook can only be applied with a float attribute."
-                             "\nproblem attribute: %s" % attribute)
+            raise ValueError(
+                "ApproachHook can only be applied with a float attribute." "\nproblem attribute: %s" % attribute
+            )
 
 
 @register_hook(hook_type_enum=HookTypes.post_reading, hooked_classes=[CannedQueries])

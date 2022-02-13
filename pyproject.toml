@@ -1,0 +1,26 @@
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+py_version = 39
+
+[tool.black]
+line-length = 120
+target-version = ['py27']
+# This is a regular expression (hence the \. is escaping the ., and not a literal \.)
+exclude = '''
+(
+    /(versioneer\.py|\.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | .*env.*
+    | _build
+    | buck-out
+    | build
+    | dist
+    | docs/*
+    )/
+    | granola/_version.py
+    | versioneer.py
+)
+'''

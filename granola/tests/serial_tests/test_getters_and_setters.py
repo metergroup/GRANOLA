@@ -146,7 +146,7 @@ def test_a_bk_cereal_with_no_canned_queries_should_still_be_able_to_use_setters(
 
 
 def test_a_bk_cereal_with_no_canned_queries_should_raise_an_unsupported_response_if_passed_a_query_not_defined(
-    bk_cereal_only_getters_and_setters
+    bk_cereal_only_getters_and_setters,
 ):
     # Given a mock pyserial class defined with no canned queries in its keys, but "ERROR\r" as the unsupported response
 

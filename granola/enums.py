@@ -25,9 +25,9 @@ def validate_enum(value, enum):
         value (Enum or enum key)
         enum: the enum to validate against
     """
-    error = ValueError("Invalid Enum Option"
-                       "\nEnum -- %s"
-                       "\nOption supplied -- %s" % (enum.str_enum_options(), value))
+    error = ValueError(
+        "Invalid Enum Option" "\nEnum -- %s" "\nOption supplied -- %s" % (enum.str_enum_options(), value)
+    )
     if isinstance(value, Enum):
         if value not in enum:
             raise error
@@ -43,8 +43,9 @@ class DocumentedEnum(Enum):
     def str_enum_options(cls):
         string = "{enum}\n".format(enum=cls.__name__)
         nl = "\n"
-        string += nl.join("Option: {name} -- Description: {doc}".format(
-            name=enum.name, doc=enum.description) for enum in cls)
+        string += nl.join(
+            "Option: {name} -- Description: {doc}".format(name=enum.name, doc=enum.description) for enum in cls
+        )
         return string
 
 
@@ -53,6 +54,7 @@ class HookTypes(DocumentedEnum):
     Allowed hook types for ``BaseHook`` methods or for a ``register_hook``
     Current allowed hook types are ``pre_reading`` and ``post_reading``.
     """
+
     pre_reading = "Hook to run before `get_reading` methods"
     post_reading = "Hook to run after `get_reading` methods"
 
@@ -64,5 +66,6 @@ class SetRelationship(DocumentedEnum):
     and nothing else, or should it exclude everything in the corresponding data container
     and include everything else.
     """
+
     include = "Include everything listed in the corresponding data container"
     exclude = "Exclude everything listed in the corresponding data container"

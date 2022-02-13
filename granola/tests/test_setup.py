@@ -21,7 +21,7 @@ def test_a_bk_cereal_on_COM1_should_print_that_it_on_COM1():
     bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH)(com1)
     mock_str = str(bk_cereal)
     try:
-        with patch('serial.Serial.open'):
+        with patch("serial.Serial.open"):
             sniffer = SerialSniffer(com2)
         sniffer_str = str(sniffer)
     finally:
@@ -111,9 +111,10 @@ def test_that_a_python_dictionary_config_is_just_as_good_as_json():
     # Given a mock pyserial class defined by a python dictionary configuration
     command_readers = [CannedQueries()]
     config = {
-        "canned_queries": {"data": {
-            "`DEFAULT`": Path(__file__).resolve().parent / "data/cereal_cmds.csv",
-        }
+        "canned_queries": {
+            "data": {
+                "`DEFAULT`": Path(__file__).resolve().parent / "data/cereal_cmds.csv",
+            }
         }
     }
 
@@ -136,18 +137,8 @@ def test_that_a_python_dictionary_config_lets_you_use_getters_and_setters():
             "default_values": {
                 "sn": "42",
             },
-            "getters": [
-                {
-                    "cmd": "get -sn\r",
-                    "response": "{{ sn }}\r>"
-                }
-            ],
-            "setters": [
-                {
-                    "cmd": "set -sn {{ sn }}\r",
-                    "response": "OK\r>"
-                }
-            ]
+            "getters": [{"cmd": "get -sn\r", "response": "{{ sn }}\r>"}],
+            "setters": [{"cmd": "set -sn {{ sn }}\r", "response": "OK\r>"}],
         }
     }
     new_sn = "2.718"

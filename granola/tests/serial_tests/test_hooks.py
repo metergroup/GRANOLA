@@ -5,8 +5,7 @@ import pytest
 
 from numpy.testing import assert_almost_equal
 
-from granola import (Cereal, CannedQueries,
-                     ApproachHook, LoopCannedQueries, StickCannedQueries, register_hook, HookTypes)
+from granola import Cereal, CannedQueries, ApproachHook, LoopCannedQueries, StickCannedQueries, register_hook, HookTypes
 from granola.tests.conftest import CONFIG_PATH, query_device, decode_response
 
 logger = logging.getLogger(__name__)
@@ -177,9 +176,9 @@ def test_approach_hook_should_reach_a_certain_value():
     # Given a mock serial with the approach hook defined for temp attribute and time increase each degree 0.1 seconds
     time_for_1_degree = 0.1
 
-    approach_hook = ApproachHook(attributes={"temp"},
-                                 include_or_exclude="include",
-                                 transition_asc_scaling=time_for_1_degree)
+    approach_hook = ApproachHook(
+        attributes={"temp"}, include_or_exclude="include", transition_asc_scaling=time_for_1_degree
+    )
 
     bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
 

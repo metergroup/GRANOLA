@@ -6,7 +6,7 @@ from granola.hooks.hooks import ApproachHook, LoopCannedQueries, StickCannedQuer
 from granola.breakfast_cereal import Cereal, PortNotOpenError
 from granola.serial_sniffer import SerialSniffer
 
-__version__ = get_versions()['version']
+__version__ = get_versions()["version"]
 del get_versions
 
 
@@ -26,5 +26,5 @@ __all__ = [
     "StickCannedQueries",
     "SetRelationship",
     "HookTypes",
-    "register_hook"
+    "register_hook",
 ]

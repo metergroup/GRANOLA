@@ -9,8 +9,15 @@ import logging
 
 from serial import Serial
 
-from granola.utils import (IS_PYTHON3, check_min_package_version, decode_bytes, encode_escape_char, get_path,
-                           add_created_at, is_terminated_with)
+from granola.utils import (
+    IS_PYTHON3,
+    check_min_package_version,
+    decode_bytes,
+    encode_escape_char,
+    get_path,
+    add_created_at,
+    is_terminated_with,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +64,7 @@ class SerialSniffer(Serial):
 
         try:
             with _open_csv_writer(
-                    self.outpath, 'w', delimiter=self.delimiter, quotechar=self.quotechar, quoting=csv.QUOTE_MINIMAL
+                self.outpath, "w", delimiter=self.delimiter, quotechar=self.quotechar, quoting=csv.QUOTE_MINIMAL
             ) as csvwriter:
                 csvwriter.writerow(["cmd", "response", "delay(ms)"])
         except IOError as err:
@@ -104,12 +111,14 @@ class SerialSniffer(Serial):
             try:
                 if self._is_write_terminated(self.current_write):
                     with _open_csv_writer(
-                            self.outpath, 'a', delimiter=self.delimiter,
-                            quotechar=self.quotechar, quoting=csv.QUOTE_MINIMAL) as csvwriter:
+                        self.outpath, "a", delimiter=self.delimiter, quotechar=self.quotechar, quoting=csv.QUOTE_MINIMAL
+                    ) as csvwriter:
                         csvwriter.writerow(
-                            [encode_escape_char(decode_bytes(self.current_write)),
-                             encode_escape_char(decode_bytes(self.current_read)),
-                             delay]
+                            [
+                                encode_escape_char(decode_bytes(self.current_write)),
+                                encode_escape_char(decode_bytes(self.current_read)),
+                                delay,
+                            ]
                         )
             except IOError as err:
                 logger.exception("%s %r", self, err)
@@ -119,6 +128,7 @@ class SerialSniffer(Serial):
         return read
 
     if check_min_package_version("pyserial", "3.0"):
+
         def reset_input_buffer(self):
             """
             A wrapper for serial.reset_input_buffer that also clears the current read buffer.
@@ -132,7 +142,9 @@ class SerialSniffer(Serial):
             Should only be used with pyserial versions >= 3.0"""
             self.current_write = b""
             super(SerialSniffer, self).reset_output_buffer()
+
     else:
+
         def flushInput(self):
             """
             A wrapper for serial.FlushInput that also clears the current read buffer.
@@ -167,15 +179,16 @@ def _open_csv_writer(path, mode, **kwargs):
 
     Returns:
         csv.writer: a handle for the csv writer
-     """
+    """
 
     if IS_PYTHON3:
-        csvfile = open(path, mode, newline='')
+        csvfile = open(path, mode, newline="")
     else:
-        csvfile = open(path, mode + 'b')
-        kwargs = {k: str(v)  # python 2 csv writer needs byte strings
-                  if isinstance(v, unicode)
-                  else v for k, v in kwargs.items()}
+        csvfile = open(path, mode + "b")
+        kwargs = {
+            k: str(v) if isinstance(v, unicode) else v  # python 2 csv writer needs byte strings
+            for k, v in kwargs.items()
+        }
 
     csvwriter = csv.writer(csvfile, **kwargs)
     try:

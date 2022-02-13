@@ -47,8 +47,10 @@ def check_deprecation(*msgs):
                 assert issubclass(w[-1].category, Warning)
                 assert msg in str(w[-1].message).lower()
             return r
+
         return _inner
     else:
+
         def _check_deprecation(func):
             @functools.wraps(func)
             def _inner(*args, **kwargs):
@@ -62,7 +64,9 @@ def check_deprecation(*msgs):
                                 break
                         assert found_warning
                 return r
+
             return _inner
+
         return _check_deprecation
 
 
@@ -89,13 +93,13 @@ def sniff_sniff():
 
 @pytest.fixture
 def mock_write():
-    with patch('serial.Serial.write') as write:
+    with patch("serial.Serial.write") as write:
         yield write
 
 
 @pytest.fixture
 def mock_read():
-    with patch('serial.Serial.read') as read:
+    with patch("serial.Serial.read") as read:
         yield read
 
 
@@ -104,26 +108,19 @@ def canned_queries_config():
     canned_queries = {
         "canned_queries": {
             "data": {
-                "`DEFAULT`": {"1\r": "1",
-                              "2\r": {"response": "2"},
-                              "3\r": {"response": "3", "delay": 3},
-                              "4\r": {"response": ["4a",
-                                                   "4b"]},
-                              "5\r": {"response": ["5a",
-                                                   "5b"],
-                                      "delay": 5},
-                              "6\r": {"response": ["6a",
-                                                   "6b"],
-                                      "delay": [6.1,
-                                                6.2]},
-                              "7\r": {"response": [["7a", {"delay": 7}],
-                                                   "7b"]},
-                              "8\r": {"response": [["8a", {"delay": 8.1}],
-                                                   "8b"],
-                                      "delay": 8},
-                              "9\r": [["9a", {"delay": 9}],
-                                      "9b"]}},
-            "delay": 0
+                "`DEFAULT`": {
+                    "1\r": "1",
+                    "2\r": {"response": "2"},
+                    "3\r": {"response": "3", "delay": 3},
+                    "4\r": {"response": ["4a", "4b"]},
+                    "5\r": {"response": ["5a", "5b"], "delay": 5},
+                    "6\r": {"response": ["6a", "6b"], "delay": [6.1, 6.2]},
+                    "7\r": {"response": [["7a", {"delay": 7}], "7b"]},
+                    "8\r": {"response": [["8a", {"delay": 8.1}], "8b"], "delay": 8},
+                    "9\r": [["9a", {"delay": 9}], "9b"],
+                }
+            },
+            "delay": 0,
         }
     }
     return canned_queries

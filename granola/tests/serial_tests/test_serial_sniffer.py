@@ -65,7 +65,7 @@ def test_sniffer_given_port_only_uses_that_path():
     com = "COM3"
 
     # When you create a sniffer object
-    with patch('serial.Serial.open'), patch("granola.serial_sniffer.datetime") as dt:
+    with patch("serial.Serial.open"), patch("granola.serial_sniffer.datetime") as dt:
         dt.now.return_value = datetime(2021, 9, 17, 16, 46, 7)
         sniff_sniff = SerialSniffer(com, baudrate=9600)
 
@@ -83,7 +83,7 @@ def test_sniffer_with_absolute_path_uses_that_path():
 
     # When you initialize an object with or without an associated com port
     rel_sniff_no_com = AbsoluteSniffer()
-    with patch('serial.Serial.open'):
+    with patch("serial.Serial.open"):
         rel_sniff_com = AbsoluteSniffer("COM3")
 
     # Then the output file is opened in the right directory
@@ -106,7 +106,7 @@ def test_sniffer_with_relative_path_uses_that_path():
 
     # When you initialize an object
     abs_sniff_no_com = AbsoluteSniffer()
-    with patch('serial.Serial.open'):
+    with patch("serial.Serial.open"):
         abs_sniff_com = AbsoluteSniffer("COM3")
 
     # Then the output file is opened in the right directory
@@ -223,10 +223,10 @@ def test_clear_input_buffer(mock_write, sniff_sniff):
     mock_write.return_value = len(input)
     sniff_sniff.write(input)
     if check_min_package_version("pyserial", "3.0"):
-        with patch('serial.Serial.reset_input_buffer'):
+        with patch("serial.Serial.reset_input_buffer"):
             sniff_sniff.reset_input_buffer()  # defined for pyserial versions >= 3.0
     else:
-        with patch('serial.Serial.flushInput'):
+        with patch("serial.Serial.flushInput"):
             sniff_sniff.flushInput()  # defined for pyserial versions < 3.0
 
     # Then the current write buffer will be empty
@@ -241,10 +241,10 @@ def test_clear_output_buffer(mock_read, sniff_sniff):
     mock_read.return_value = output
     sniff_sniff.read(output)
     if check_min_package_version("pyserial", "3.0"):
-        with patch('serial.Serial.reset_output_buffer'):
+        with patch("serial.Serial.reset_output_buffer"):
             sniff_sniff.reset_output_buffer()  # defined for pyserial versions >= 3.0
     else:
-        with patch('serial.Serial.flushOutput'):
+        with patch("serial.Serial.flushOutput"):
             sniff_sniff.flushOutput()  # defined for pyserial versions < 3.0
 
     # Then the current read buffer will be empty
@@ -266,7 +266,7 @@ def test_delay_recorded(mock_read, mock_write, sniff_sniff):
 
     # Then the result is written to the csv
     result = load_serial_df(sniff_sniff.outpath)
-    assert result.loc[0, 'delay(ms)'] >= delay * 1000
+    assert result.loc[0, "delay(ms)"] >= delay * 1000
 
 
 def test_reads_writes_length_of_terminator_still_behave(mock_read, mock_write, sniff_sniff):

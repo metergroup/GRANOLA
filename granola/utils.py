@@ -24,16 +24,18 @@ PYSERIAL_FIELDS_TO_EXCLUDE = {"BAUDRATES", "BYTESIZES", "STOPBITS", "PARITIES", 
 SENTINEL = object()
 
 # making ABCs more uniform and compatible between python 2 and 3
-ABC = abc.ABCMeta('ABC', (object,), {})
+ABC = abc.ABCMeta("ABC", (object,), {})
 
 
 def add_created_at(init):
     """
     init decorator that adds `_created_at` attribute. May add future functionality later"""
+
     @functools.wraps(init)
     def wrapper(self, *args, **kwargs):
         init(self, *args, **kwargs)
         self._created_at = datetime.now()
+
     return wrapper
 
 
@@ -48,7 +50,7 @@ def fixpath(path):
 
     We then make sure to return a string.
     """
-    if os.name == 'posix':
+    if os.name == "posix":
         new_path = pathlib.PureWindowsPath(path).as_posix()
     else:
         new_path = pathlib.Path(path)
@@ -60,11 +62,11 @@ def deunicodify_hook(pairs):
     new_pairs = []
     for key, value in pairs:
         if isinstance(value, list):
-            value = [val.encode('utf-8') if isinstance(val, unicode) else val for val in value]
+            value = [val.encode("utf-8") if isinstance(val, unicode) else val for val in value]
         if isinstance(value, unicode):
-            value = value.encode('utf-8')
+            value = value.encode("utf-8")
         if isinstance(key, unicode):
-            key = key.encode('utf-8')
+            key = key.encode("utf-8")
         new_pairs.append((key, value))
     return OrderedDict(new_pairs)
 
@@ -75,8 +77,8 @@ def decode_bytes(byte_string):
         if IS_PYTHON3:
             return byte_string.decode("unicode_escape")
         else:
-            return byte_string.decode('string_escape')
-    raise TypeError('unicode strings are not supported, only use byte strings: {!r}'.format(byte_string))
+            return byte_string.decode("string_escape")
+    raise TypeError("unicode strings are not supported, only use byte strings: {!r}".format(byte_string))
 
 
 def encode_to_bytes(string, encoding="ascii"):
@@ -91,7 +93,7 @@ def decode_escape_char(string):
     if IS_PYTHON3:
         return bytes(string, "utf-8").decode("unicode_escape")
     else:
-        return string.decode('string_escape')
+        return string.decode("string_escape")
 
 
 def encode_escape_char(string):
@@ -100,7 +102,7 @@ def encode_escape_char(string):
     if IS_PYTHON3 or isinstance(string, unicode):
         return unicode(string.encode("unicode_escape"), "utf-8")
     else:
-        return string.encode('string_escape')
+        return string.encode("string_escape")
 
 
 def load_serial_df(path):
@@ -110,10 +112,7 @@ def load_serial_df(path):
     Necessary columns -> cmd, response
     """
 
-    df = pd.read_csv(path,
-                     converters=dict(cmd=decode_escape_char,
-                                     response=decode_escape_char),
-                     skipinitialspace=True)
+    df = pd.read_csv(path, converters=dict(cmd=decode_escape_char, response=decode_escape_char), skipinitialspace=True)
     return df
 
 
@@ -121,10 +120,11 @@ def check_min_package_version(package, minimum_version, should_trunc_to_same_len
     """Helper to decide if the package you are using meets minimum version requirement for some feature."""
     real_version = pkg_resources.get_distribution(package).version
     if should_trunc_to_same_len:
-        minimum_version = minimum_version[0:len(real_version)]
+        minimum_version = minimum_version[0 : len(real_version)]
 
-    logger.debug("package %s, version: %s, minimum version to run certain features: %s",
-                 package, real_version, minimum_version)
+    logger.debug(
+        "package %s, version: %s, minimum version to run certain features: %s", package, real_version, minimum_version
+    )
 
     return real_version >= minimum_version
 
@@ -161,11 +161,11 @@ def is_terminated_with(input, terminator):
 
     Returns:
         bool : whether the input ends with the terminator
-        """
+    """
     if len(input) < len(terminator):
         return False
     else:
-        return input[-len(terminator):] == terminator
+        return input[-len(terminator) :] == terminator
 
 
 def _get_subclasses(cls):
@@ -173,5 +173,5 @@ def _get_subclasses(cls):
 
 
 def deprecation(message):
-    warnings.simplefilter('always', DeprecationWarning)
+    warnings.simplefilter("always", DeprecationWarning)
     warnings.warn(message, DeprecationWarning)

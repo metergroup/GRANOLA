@@ -23,15 +23,7 @@ def test_config_key_deprecation():
 @check_deprecation("canned_queries['data'] key '_default_csv_'")
 def test_default_df_key_deprecation():
     # Given a mock serial with deprecated "files" and "_default_csv_" keys
-    config = {
-        "canned_queries": {
-            "files": {
-                "_default_csv_": {"1\r": "1",
-                                  "2\r": {"response": "2"}}
-            },
-            "delay": 0
-        }
-    }
+    config = {"canned_queries": {"files": {"_default_csv_": {"1\r": "1", "2\r": {"response": "2"}}}, "delay": 0}}
     # When we initialize it, internally these keys are remapped to the non deprecated version
     mock = Cereal(config=config)()
 
@@ -56,17 +48,14 @@ def test_jinja2_variable_start_and_end_deprecation():
     assert sn == b"42\r>"
 
 
-@check_deprecation("Using 'getter' key inside 'getter_and_setters'",
-                   "Using 'setter' key inside 'getter_and_setters'")
+@check_deprecation("Using 'getter' key inside 'getter_and_setters'", "Using 'setter' key inside 'getter_and_setters'")
 def test_getter_and_setter_keys_deprecation():
     # Given a mock serial with "getter" and "setter" keys
     config = {
         "getters_and_setters": {
             "default_values": {"sn": "42"},
-            "getters": [{"getter": "get -sn\r",
-                         "response": "{{ sn }}\r>"}],
-            "setters": [{"setter": "set -sn {{ sn }}\r",
-                         "response": "OK\r>"}],
+            "getters": [{"getter": "get -sn\r", "response": "{{ sn }}\r>"}],
+            "setters": [{"setter": "set -sn {{ sn }}\r", "response": "OK\r>"}],
         }
     }
     # When we initialize it, internally these keys are remapped to the non deprecated version
@@ -78,9 +67,4 @@ def test_getter_and_setter_keys_deprecation():
     assert sn == b"42\r>"
 
 
-config = {
-    "canned_queries": {
-        "data": {
-            "`DEFAULT`": {"1\r": "1",
-                          "2\r": ["2a", "2b"]}
-        }}}
+config = {"canned_queries": {"data": {"`DEFAULT`": {"1\r": "1", "2\r": ["2a", "2b"]}}}}

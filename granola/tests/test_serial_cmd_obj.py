@@ -68,9 +68,7 @@ def test_that_you_can_specify_a_delay_on_one_command():
     # Given a dictionary canned queries with a delay on only one command
     config = {
         "canned_queries": {
-            "data": {
-                "`DEFAULT`": {"1\r": "1",
-                              "2\r": {"response": "3", "delay": 3}}},
+            "data": {"`DEFAULT`": {"1\r": "1", "2\r": {"response": "3", "delay": 3}}},
         }
     }
 

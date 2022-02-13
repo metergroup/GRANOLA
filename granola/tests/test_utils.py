@@ -21,13 +21,7 @@ PATHS_TO_TEST = [
 ]
 
 
-ROOT_PATHS_TO_TEST = [
-    "x\\y\\z",
-    "x/y/z",
-    r"x\y\z",
-    r"x\y/z",
-    "x//y\\\\z"
-]
+ROOT_PATHS_TO_TEST = ["x\\y\\z", "x/y/z", r"x\y\z", r"x\y/z", "x//y\\\\z"]
 
 
 def test_using_get_path_with_just_a_file_should_return_absolute_path_to_root_to_file():
@@ -59,8 +53,10 @@ def test_using_get_path_with_directories_that_dont_exist_should_create_those_dir
 
 
 @pytest.mark.parametrize("path", PATHS_TO_TEST)
-@pytest.mark.parametrize("os_name,pathlib_flavor,expected", [("nt", "_WindowsFlavour", r"a\b\c\d.json"),
-                                                             ("posix", "_PosixFlavour", r"a/b/c/d.json")])
+@pytest.mark.parametrize(
+    "os_name,pathlib_flavor,expected",
+    [("nt", "_WindowsFlavour", r"a\b\c\d.json"), ("posix", "_PosixFlavour", r"a/b/c/d.json")],
+)
 def test_fixpath_normalizes_paths_on_both_windows_and_posix_systems(path, os_name, pathlib_flavor, expected):
     # Given a series of paths in string formats to normalize
 
@@ -72,10 +68,13 @@ def test_fixpath_normalizes_paths_on_both_windows_and_posix_systems(path, os_nam
 
 @pytest.mark.parametrize("path", PATHS_TO_TEST)
 @pytest.mark.parametrize("root", ROOT_PATHS_TO_TEST)
-@pytest.mark.parametrize("os_name,pathlib_flavor,expected", [("nt", "_WindowsFlavour", r"x\y\z\a\b\c\d.json"),
-                                                             ("posix", "_PosixFlavour", r"x/y/z/a/b/c/d.json")])
-def test_fixpath_takes_joined_paths_on_both_windows_and_posix_systems_and_normalizes_them(path, root, os_name,
-                                                                                          pathlib_flavor, expected):
+@pytest.mark.parametrize(
+    "os_name,pathlib_flavor,expected",
+    [("nt", "_WindowsFlavour", r"x\y\z\a\b\c\d.json"), ("posix", "_PosixFlavour", r"x/y/z/a/b/c/d.json")],
+)
+def test_fixpath_takes_joined_paths_on_both_windows_and_posix_systems_and_normalizes_them(
+    path, root, os_name, pathlib_flavor, expected
+):
     # Given a series of paths and roots in string formats to join and then normalize
 
     # When we join their paths and then fix their paths on both windows and linux

@@ -55,8 +55,7 @@ def test_fixture_should_raise_portnotopenerror_if_used_while_closed(mock_cereal)
         mock_cereal.write("get ver\r")
 
 
-def test_fixture_should_raise_portnotopenerror_if_used_while_closed_but_then_open_and_try_again(
-        mock_cereal):
+def test_fixture_should_raise_portnotopenerror_if_used_while_closed_but_then_open_and_try_again(mock_cereal):
     # Given a mock pyserial class has been initialized
 
     # When you close and reopen the connection
