@@ -1,6 +1,7 @@
 name: Lint
 
-on: [push, pull_request]
+on:
+  - pull_request
 
 jobs:
   lint:
@@ -18,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install flake8 black<=21.12b0 isort
+          python -m pip install flake8 'black<=21.12b0' isort
       - name: Lint
         run: |
           flake8 granola
