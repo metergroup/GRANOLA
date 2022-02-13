@@ -33,5 +33,3 @@ jobs:
         python -m pip install .[test]
     - name: Run Tests
       run: pytest --cache-clear --cov --cov-branch
-    - name: Comment coverage
-      uses: coroo/pytest-coverage-commentator@v1.0.2
