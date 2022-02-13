@@ -1,27 +1,27 @@
-name: Lint
+# name: Lint
 
-on:
-  - pull_request
+# on:
+#   - pull_request
 
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8"]
+# jobs:
+#   lint:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         python-version: ["3.8"]
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install flake8 'black<=21.12b0' isort
-      - name: Lint
-        run: |
-          flake8 granola
-          black --check --diff granola
-          isort granola
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set up Python ${{ matrix.python-version }}
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: ${{ matrix.python-version }}
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           python -m pip install flake8 'black<=21.12b0' isort
+#       - name: Lint
+#         run: |
+#           flake8 granola
+#           black --check --diff granola
+#           isort granola
