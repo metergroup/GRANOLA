@@ -1,10 +1,16 @@
 import os
 import time
-from datetime import datetime
 from builtins import bytes
+from datetime import datetime
 
 from granola import SerialSniffer
-from granola.utils import IS_PYTHON3, check_min_package_version, decode_bytes, int_to_char, load_serial_df
+from granola.utils import (
+    IS_PYTHON3,
+    check_min_package_version,
+    decode_bytes,
+    int_to_char,
+    load_serial_df,
+)
 
 if IS_PYTHON3:
     from unittest.mock import patch

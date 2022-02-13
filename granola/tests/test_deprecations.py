@@ -1,6 +1,10 @@
 from granola import Cereal
-from granola.tests.conftest import query_device, decode_response, CONFIG_PATH
-from granola.tests.conftest import check_deprecation
+from granola.tests.conftest import (
+    CONFIG_PATH,
+    check_deprecation,
+    decode_response,
+    query_device,
+)
 
 
 @check_deprecation("Instantiating Cereal with `config_path` and `config_key`")

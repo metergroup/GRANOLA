@@ -5,9 +5,9 @@ from math import pi
 import attr
 import numpy as np
 
+from granola.command_readers import CannedQueries, GettersAndSetters
+from granola.enums import HookTypes, SetRelationship
 from granola.hooks.base_hook import BaseHook, register_hook
-from granola.command_readers import GettersAndSetters, CannedQueries
-from granola.enums import SetRelationship, HookTypes
 from granola.utils import SENTINEL
 
 

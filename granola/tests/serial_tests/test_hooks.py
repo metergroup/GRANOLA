@@ -2,11 +2,18 @@ import logging
 import time
 
 import pytest
-
 from numpy.testing import assert_almost_equal
 
-from granola import Cereal, CannedQueries, ApproachHook, LoopCannedQueries, StickCannedQueries, register_hook, HookTypes
-from granola.tests.conftest import CONFIG_PATH, query_device, decode_response
+from granola import (
+    ApproachHook,
+    CannedQueries,
+    Cereal,
+    HookTypes,
+    LoopCannedQueries,
+    StickCannedQueries,
+    register_hook,
+)
+from granola.tests.conftest import CONFIG_PATH, decode_response, query_device
 
 logger = logging.getLogger(__name__)
 

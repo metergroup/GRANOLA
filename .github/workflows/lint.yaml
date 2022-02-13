@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Test
+name: Lint
 
 # Controls when the workflow will run
 on:
@@ -8,7 +8,7 @@ on:
   - pull_request
 
 jobs:
-  tox:
+  lint:
     # We want to run on external PRs, but not on our own internal PRs as they'll be run
     # by the push to the branch. Without this if check, checks are duplicated since
     # internal PRs match both the push and pull_request events.
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.9']
 
     steps:
     - uses: actions/checkout@v1
@@ -30,5 +30,5 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install tox tox-gh-actions
-    - name: Test with tox
-      run: tox
+    - name: Lint with tox
+      run: tox -e style

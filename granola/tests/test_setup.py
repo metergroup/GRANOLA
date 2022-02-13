@@ -2,9 +2,9 @@ import logging
 import os
 from pathlib import Path
 
-from granola import Cereal, SerialSniffer, GettersAndSetters, CannedQueries
+from granola import CannedQueries, Cereal, GettersAndSetters, SerialSniffer
+from granola.tests.conftest import CONFIG_PATH, decode_response, query_device
 from granola.utils import IS_PYTHON3
-from granola.tests.conftest import query_device, decode_response, CONFIG_PATH
 
 if IS_PYTHON3:
     from unittest.mock import patch

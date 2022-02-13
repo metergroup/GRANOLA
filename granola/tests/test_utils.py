@@ -3,7 +3,7 @@ import shutil
 
 import pytest
 
-from granola.utils import IS_PYTHON3, get_path, fixpath
+from granola.utils import IS_PYTHON3, fixpath, get_path
 
 if IS_PYTHON3:
     from unittest.mock import patch

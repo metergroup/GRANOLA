@@ -1,5 +1,5 @@
 from granola import Cereal
-from granola.tests.conftest import query_device, CONFIG_PATH, assert_filled_all
+from granola.tests.conftest import CONFIG_PATH, assert_filled_all, query_device
 
 
 def test_that_you_can_pass_canned_queries_directly_instead_of_as_file_paths(canned_queries_config):

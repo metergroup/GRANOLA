@@ -1,8 +1,8 @@
 import pytest
 
 from granola import Cereal
+from granola.tests.conftest import CONFIG_PATH, decode_response, query_device
 from granola.utils import int_to_char
-from granola.tests.conftest import decode_response, query_device, CONFIG_PATH
 
 
 def test_get_sn_getter_from_should_default_to_42(mock_cereal):

@@ -1,4 +1,5 @@
 import pytest
+
 from granola.enums import SetRelationship, get_attribute_from_enum, validate_enum
 
 
