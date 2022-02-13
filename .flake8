@@ -1,8 +1,8 @@
 [flake8]
 # Some like to bend the rules :)
-# E722: bare 'except'
+# flake8 isn't pep8 complient sometimes, but black catches it correctly
 # W503: line break before bin operator (W504: after binary operator. flake8 lets us decide)
-ignore = E722, W503
+ignore = E203, W503
 
 exclude =
     .git,
