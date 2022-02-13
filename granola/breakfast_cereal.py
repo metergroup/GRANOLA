@@ -2,28 +2,30 @@ import inspect
 import json
 import logging
 import os
-
 from collections import OrderedDict
 
 from serial import Serial
 
-from granola.command_readers import GettersAndSetters, CannedQueries, BaseCommandReaders
-from granola.hooks.base_hook import _run_pre_reading_hooks, _run_post_reading_hooks
-from granola.hooks.base_hook import BaseHook
+from granola.command_readers import BaseCommandReaders, CannedQueries, GettersAndSetters
+from granola.hooks.base_hook import (
+    BaseHook,
+    _run_post_reading_hooks,
+    _run_pre_reading_hooks,
+)
 from granola.hooks.hooks import LoopCannedQueries
 from granola.utils import (
+    IS_PYTHON3,
     SENTINEL,
+    _get_subclasses,
+    add_created_at,
+    check_min_package_version,
     decode_bytes,
+    deprecation,
+    deunicodify_hook,
     encode_to_bytes,
     fixpath,
     get_path,
-    _get_subclasses,
-    check_min_package_version,
-    add_created_at,
     is_terminated_with,
-    IS_PYTHON3,
-    deunicodify_hook,
-    deprecation,
 )
 
 try:

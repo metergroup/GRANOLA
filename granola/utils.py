@@ -1,16 +1,16 @@
 import abc
-from datetime import datetime
 import functools
 import logging
 import os
 import pathlib
 import sys
 import warnings
+from builtins import bytes
 from builtins import (
-    bytes,
     str as unicode,  # python 3 doesn't have a unicode type, and we don't want to override python2 str type
 )
 from collections import OrderedDict
+from datetime import datetime
 
 import pandas as pd
 import pkg_resources

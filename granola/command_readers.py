@@ -1,22 +1,27 @@
 import abc
+import copy
 import inspect
 import logging
-import re
-import random
 import os
-import copy
-
+import random
+import re
 from collections import OrderedDict
-
-import jinja2
-import jinja2.meta
-import attr
-import pandas as pd
 from pathlib import Path
 
-from granola.utils import load_serial_df, fixpath, IS_PYTHON3, SENTINEL, ABC, deprecation
-from granola.hooks.base_hook import BaseHook, wrap_in_hooks
+import attr
+import jinja2
+import jinja2.meta
+import pandas as pd
 
+from granola.hooks.base_hook import BaseHook, wrap_in_hooks
+from granola.utils import (
+    ABC,
+    IS_PYTHON3,
+    SENTINEL,
+    deprecation,
+    fixpath,
+    load_serial_df,
+)
 
 try:
     from enum import Enum, auto

@@ -1,21 +1,21 @@
 import csv
+import logging
+from builtins import bytes
 from builtins import (
-    bytes,
     str as unicode,  # python 3 doesn't have a unicode type, and we don't want to override python2 str type
 )
 from contextlib import contextmanager
 from datetime import datetime
-import logging
 
 from serial import Serial
 
 from granola.utils import (
     IS_PYTHON3,
+    add_created_at,
     check_min_package_version,
     decode_bytes,
     encode_escape_char,
     get_path,
-    add_created_at,
     is_terminated_with,
 )
 

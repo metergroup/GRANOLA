@@ -1,7 +1,12 @@
 import functools
 import inspect
 
-from granola.enums import SetRelationship, HookTypes, get_attribute_from_enum, validate_enum
+from granola.enums import (
+    HookTypes,
+    SetRelationship,
+    get_attribute_from_enum,
+    validate_enum,
+)
 from granola.utils import ABC, IS_PYTHON3
 
 
