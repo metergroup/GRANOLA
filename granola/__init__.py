@@ -1,6 +1,7 @@
 from granola._version import get_versions
 from granola.breakfast_cereal import Cereal, PortNotOpenError
 from granola.command_readers import (
+    BaseCommandReaders,
     CannedQueries,
     DefaultDF,
     GettersAndSetters,
@@ -24,6 +25,7 @@ del get_versions
 __all__ = [
     "__version__",
     "RandomizeResponse",
+    "BaseCommandReaders",
     "SerialCmds",
     "Cereal",
     "DefaultDF",

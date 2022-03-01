@@ -13,7 +13,7 @@ import jinja2
 import jinja2.meta
 import pandas as pd
 
-from granola.hooks.base_hook import BaseHook, wrap_in_hooks
+from granola.hooks.base_hook import wrap_in_hooks
 from granola.utils import (
     ABC,
     IS_PYTHON3,
@@ -70,7 +70,7 @@ class SerialCmds(object):
     )
 
     @classmethod
-    def from_file(cls, file, config_path=None, extra_fields=None):
+    def from_file(cls, file, config_path=None, **kwargs):
         """
         Generate a `SerialCmds` from a csv file path
 
@@ -91,12 +91,12 @@ class SerialCmds(object):
         file = fixpath(file)
         logger.debug("Canned query path %s: ", file)
         df = load_serial_df(file)
-        if extra_fields is not None:
-            cls._append_extra_fields_to_df(df, extra_fields)
+        if kwargs:
+            cls._append_extra_fields_to_df(df, **kwargs)
         return cls(data=df)
 
     @classmethod
-    def from_dict(cls, dic, extra_fields=None):
+    def from_dict(cls, dic, **kwargs):
         """
         Generate a `SerialCmds` from a dictionary of serial commands. The format for this dictionary
         can take a few forms. It can either be expressed in a JSON configuration or passed in python
@@ -114,8 +114,8 @@ class SerialCmds(object):
         for cmd, value in d.items():
             cls._transverse_dict_and_append(data, cmd, value)
         df = pd.DataFrame.from_records(data)
-        if extra_fields is not None:
-            cls._append_extra_fields_to_df(df, extra_fields)
+        if kwargs:
+            cls._append_extra_fields_to_df(df, **kwargs)
         return cls(data=df)
 
     @classmethod
@@ -179,22 +179,22 @@ class SerialCmds(object):
         data.append(dict(cmd=cmd, response=response, **ex_fields))
 
     @staticmethod
-    def _append_extra_fields_to_df(data, extra_fields):
-        for field, value in extra_fields.items():
+    def _append_extra_fields_to_df(data, **kwargs):
+        for field, value in kwargs.items():
             if field in data.columns:
                 data.loc[data[field].isna(), field] = value
             else:
                 data[field] = value
 
 
-@attr.s
 class InstrumentAttribute(object):
-    name = attr.ib(type=str)
-    value = attr.ib(type=str)
-    meta_data = attr.ib(type=dict, default=attr.Factory(OrderedDict))
+    def __init__(self, name, value, meta_data=None):
+        self.name = name
+        self.value = value
+        self.def_value = value
+        self.meta_data = meta_data if meta_data is not None else OrderedDict()
 
 
-@attr.s
 class BaseCommandReaders(ABC):
     """
     BaseCommandReaders Class that sets the interface for other CommandReaders. The basic form of
@@ -222,14 +222,10 @@ class BaseCommandReaders(ABC):
         post_hooks (list or tuple): iterable of hooks to run after `get_readings`
     """
 
-    _hooks = attr.ib(type=BaseHook, default=attr.Factory(list))
-
-    _config = attr.ib(type=dict, init=False)
-    _config_path = attr.ib(type=dict, init=False)
-
-    def initialize_config(self, config, config_path=None):
-        self._config = config
+    def __init__(self, config_path=None, hooks=None, *args, **kwargs):
+        super(BaseCommandReaders, self).__init__()
         self._config_path = config_path if config_path is not None else os.getcwd()
+        self._hooks_ = hooks if hooks is not None else []
 
     @wrap_in_hooks
     @abc.abstractmethod
@@ -247,8 +243,15 @@ class BaseCommandReaders(ABC):
                 by the hooks and CommandReader, dependent on the individual CommandReader.
         """
 
+    def register_hook(self, hook):
+        self._hooks_.append(hook)
 
-@attr.s
+    def assign_default_hook(self):
+        """If self._hooks_ hooks is empty, add any default hooks for this Command Reader."""
+        if not self._hooks_:
+            ...
+
+
 class GettersAndSetters(BaseCommandReaders):
     """
     Helper class that processes getters and setters. It initializes the default values set
@@ -264,63 +267,31 @@ class GettersAndSetters(BaseCommandReaders):
         arguments for BaseCommandReaders
     """
 
-    instrument_attributes = attr.ib(type=dict, default=attr.Factory(OrderedDict), init=False)
-    # format := {getter_cmd: {"attributes": list_of_instrument_attributes,
-    #                         "response": getter_response_format}}
-    getters = attr.ib(type=dict, default=attr.Factory(OrderedDict), init=False)
-    # setter regex has named match groups created at initialization for ease of book keeping
-    setters = attr.ib(type=dict, default=attr.Factory(OrderedDict), init=False)
-    jinja_env = attr.ib(type=jinja2.Environment, default=attr.Factory(OrderedDict), init=False)
-
-    def initialize_config(self, config, config_path):
-        r"""
-        Initialize config, the config dictionary that has optionally has the key
-        `"getters_and_setters"` defined in it. If `"canned_queries"` is defined,
-        it should be in the form::
-
-            .. code-block:: JSON
-
-                {
-                    "getters_and_setters": {
-                        "default_values": {
-                            "devtype": "Cereal",
-                            "sn": "42",
-                            "fw_ver":"0.0.0"
-                        },
-                        "getters": [
-                            {
-                                "cmd": "get -sn\r",
-                                "response": "{{ sn }}\r>"
-                            },
-                            {
-                                "cmd": "show\r",
-                                "response": "{{ devtype }} {{ fw_ver }} {{ sn }}\r>"
-                            }
-                        ],
-                        "setters": [
-                            {
-                                "cmd": "set -sn {{ sn }}\r",
-                                "response": "OK\r>"
-                            }
-                        ]
-                    }
-                }
-
-            The {{ sn }} in "cmd": "set -sn {{ sn }}\r" pulls out the attribute defined in
-            "getters_and_setters" and is gotten when you issue either "get -sn\r",
-            or "show\r" (which will also return fw_ver and devtype).
-
-        """
-        super(GettersAndSetters, self).initialize_config(config, config_path)
-        self._variable_start_string = config.get("getters_and_setters", {}).get("variable_start_string", "{{")
-        self._variable_end_string = config.get("getters_and_setters", {}).get("variable_end_string", "}}")
+    def __init__(
+        self, default_values, getters, setters, variable_start_string="{{", variable_end_string="}}", **kwargs
+    ):
+        super(GettersAndSetters, self).__init__(**kwargs)
+        self._variable_start_string = variable_start_string
+        self._variable_end_string = variable_end_string
         self.jinja_env = jinja2.Environment(
-            variable_start_string=self._variable_start_string,
-            variable_end_string=self._variable_end_string,
+            variable_start_string=variable_start_string,
+            variable_end_string=variable_end_string,
             loader=jinja2.BaseLoader(),
         )
+        self.instrument_attributes = OrderedDict()
+        self.getters = OrderedDict()
+        self.setters = OrderedDict()
+        self._load_getters_and_setters(default_values, getters, setters)
 
-        self._load_getters_and_setters()
+    @classmethod
+    def _from_config(cls, config, **kwargs):
+        getters_and_setters = config.get("getters_and_setters", {})
+        default_values = getters_and_setters.get("default_values", {})
+        getters = getters_and_setters.get("getters", {})
+        setters = getters_and_setters.get("setters", {})
+        variable_start_string = getters_and_setters.get("variable_start_string", "{{")
+        variable_end_string = getters_and_setters.get("variable_end_string", "}}")
+        return cls(default_values, getters, setters, variable_start_string, variable_end_string, **kwargs)
 
     @wrap_in_hooks
     def get_reading(self, data):
@@ -359,26 +330,25 @@ class GettersAndSetters(BaseCommandReaders):
         result = template.render(**attribute_vals).replace("_\\r_", "\r").replace("_\\n_", "\n")
         return result
 
-    def _load_getters_and_setters(self):
+    def _load_getters_and_setters(self, default_values, getters, setters):
         """Loads default values, getters and setters"""
 
-        getters_and_setters = self._config.get("getters_and_setters", OrderedDict())
-        if "default_values" not in getters_and_setters:
+        if not default_values:
             return
-        self._initialize_default_instrument_attributes(getters_and_setters)
-        self._initialize_getters(getters_and_setters)
-        self._initialize_setters(getters_and_setters)
+        self._initialize_default_instrument_attributes(default_values)
+        self._initialize_getters(getters)
+        self._initialize_setters(setters)
 
-    def _initialize_default_instrument_attributes(self, getters_and_setters):
+    def _initialize_default_instrument_attributes(self, default_values):
         """Loads default values into `self.instrument_attributes`"""
-        for attribute, default_value in getters_and_setters["default_values"].items():
+        for attribute, default_value in default_values.items():
             self.instrument_attributes[attribute] = InstrumentAttribute(name=attribute, value=default_value)
 
-    def _initialize_getters(self, getters_and_setters):
+    def _initialize_getters(self, getters):
         """
         Loads all getters from getters_and_setters["getters"] into `self.getters`. If getter
         does not get an attribute in self.instrument_attributes, raise Value Error"""
-        for getter in getters_and_setters.get("getters", {}):
+        for getter in getters:
             if "getter" in getter:
                 deprecation(
                     "Using 'getter' key inside 'getter_and_setters'"
@@ -392,11 +362,11 @@ class GettersAndSetters(BaseCommandReaders):
 
             self.getters[getter["cmd"]] = getter["response"]
 
-    def _initialize_setters(self, getters_and_setters):
+    def _initialize_setters(self, setters):
         """
         Loads all setters from getters_and_setters["setters"] into `self.setters`. If setter
         does not get an attribute in self.instrument_attributes, raise Value Error"""
-        for setter in getters_and_setters.get("setters", {}):
+        for setter in setters:
             if "setter" in setter:
                 deprecation(
                     "Using 'setter' key inside 'getter_and_setters'"
@@ -485,7 +455,6 @@ class GettersAndSetters(BaseCommandReaders):
                     )
 
 
-@attr.s
 class CannedQueries(BaseCommandReaders):
     """
     Helper class that processes canned queries (queries defined ahead of time from a list
@@ -499,14 +468,45 @@ class CannedQueries(BaseCommandReaders):
     See :ref:`Canned Queries Configuration` for examples on configuration formatting.
     """
 
-    serial_cmd_files = attr.ib(type=dict, default=attr.Factory(OrderedDict), init=False)
-    serial_dfs = attr.ib(type=dict, default=attr.Factory(OrderedDict), init=False)
-    serial_generator = attr.ib(type=dict, default=attr.Factory(OrderedDict), init=False)
+    def __init__(self, data=None, config_path=None, **kwargs):
 
-    def initialize_config(self, config, config_path=None):
-        super(CannedQueries, self).initialize_config(config, config_path)
-        self._load_canned_queries(self._config_path)
+        super(CannedQueries, self).__init__(config_path=config_path, **kwargs)
+        self.data = data if data is not None else OrderedDict()
+        self.serial_cmd_files = OrderedDict()
+        self.serial_dfs = OrderedDict()
+        self.serial_generator = OrderedDict()
+
+        if DeprecatedDefaultDF in data:
+            deprecation("canned_queries['data'] key '_default_csv_' has been deprecated, Use '`DEFAULT`'")
+            default = data.pop(DeprecatedDefaultDF)
+            data[DefaultDF] = default
+
+        for key, maybe_file in data.items():
+            if isinstance(maybe_file, (str, Path)):
+                self.serial_cmd_files[key] = SerialCmds.from_file(maybe_file, config_path, **kwargs)
+            elif isinstance(maybe_file, dict):
+                self.serial_cmd_files[key] = SerialCmds.from_dict(maybe_file, **kwargs)
+
         self._seed_serial_dfs()
+
+    @classmethod
+    def _from_config(cls, config, config_path=None, **kwargs):
+        canned_queries = config.get("canned_queries", {})
+
+        if "files" in canned_queries and isinstance(canned_queries["files"], dict):
+            deprecation("canned_queries key 'files' has been deprecated. Use the key 'data' instead.")
+            data = canned_queries.pop("files")
+            canned_queries["data"] = data
+
+        kwargs.update({key: item for key, item in canned_queries.items() if key != "data"})
+        data = canned_queries.get("data", {})
+        return cls(data, config_path, **kwargs)
+
+    def assign_default_hook(self):
+        if not self._hooks_:
+            from granola.hooks.hooks import LoopCannedQueries
+
+            self._hooks_ = [LoopCannedQueries()]
 
     @wrap_in_hooks
     def get_reading(self, data):
@@ -537,7 +537,7 @@ class CannedQueries(BaseCommandReaders):
             self.serial_generator[cmd] = serial_df_generator
 
     def _load_canned_queries(self, config_path):
-        # kwargs = self._extract_serial_cmd_file_kw_from_config()
+
         canned_queries = self._config.get("canned_queries", {})
 
         if "files" in canned_queries and isinstance(canned_queries["files"], dict):
@@ -580,7 +580,7 @@ class CannedQueries(BaseCommandReaders):
         return kwargs
 
     def _seed_serial_dfs(self):
-        if self._config.get("canned_queries"):
+        if self.serial_cmd_files:
             self.serial_dfs = OrderedDict(
                 (key, serial_cmd_file.data) for key, serial_cmd_file in self.serial_cmd_files.items()
             )
@@ -655,14 +655,3 @@ class CannedQueries(BaseCommandReaders):
                 yield df["response"].iloc[row]
                 if serial_cmd_file.will_randomize_responses == RandomizeResponse.randomized_and_remove:
                     df = df.drop(row)
-
-
-config = {
-    "getters_and_setters": {
-        "default_values": {"sn": "42"},
-        "getters": [{"cmd": "get -sn\r", "response": "`sn`\r>"}],
-        "setters": [{"cmd": "set -sn `sn`\r", "response": "OK\r>"}],
-        "variable_start_string": "`",
-        "variable_end_string": "`",
-    }
-}

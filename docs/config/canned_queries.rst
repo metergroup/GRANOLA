@@ -2,7 +2,8 @@
 Canned Queries Configuration
 =================================
 
-To use the :mod:`Command Reader <granola.command_readers>` :class:`~granola.command_readers.CannedQueries`, you must define ``"canned_queries"`` as a dictionary in your configuration.
+To use the :mod:`Command Reader <granola.command_readers>` :class:`~granola.command_readers.CannedQueries`,
+you must define ``"canned_queries"`` as a dictionary in your configuration.
 Which involves having a ``"data"`` dictionary with either file paths listed or serial commands directly defined.
 
 File Path Option

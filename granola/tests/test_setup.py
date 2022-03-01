@@ -2,7 +2,15 @@ import logging
 import os
 from pathlib import Path
 
-from granola import CannedQueries, Cereal, GettersAndSetters, SerialSniffer
+from granola import (
+    BaseCommandReaders,
+    CannedQueries,
+    Cereal,
+    GettersAndSetters,
+    HookTypes,
+    SerialSniffer,
+    register_hook,
+)
 from granola.tests.conftest import CONFIG_PATH, decode_response, query_device
 from granola.utils import IS_PYTHON3
 
@@ -64,7 +72,7 @@ def test_that_a_config_paths_work_when_cwd_is_changed():
 
 def test_a_bk_cereal_with_on_GettersAndSetters_command_readers_should_still_work_with_those_commands():
     # Given a mock pyserial class defined with just a GettersAndSetters command_readers
-    command_readers = [GettersAndSetters()]
+    command_readers = [GettersAndSetters]
     new_sn = "2.718"
 
     # When we initialize it
@@ -81,7 +89,7 @@ def test_a_bk_cereal_with_on_GettersAndSetters_command_readers_should_still_work
 
 def test_a_bk_cereal_with_on_GettersAndSetters_command_readers_should_throw_error_on_bad_query():
     # Given a mock pyserial class defined with just a GettersAndSetters command_readers
-    command_readers = [GettersAndSetters()]
+    command_readers = [GettersAndSetters]
 
     # When we initialize it
     mock = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, command_readers=command_readers)()
@@ -95,7 +103,7 @@ def test_a_bk_cereal_with_on_GettersAndSetters_command_readers_should_throw_erro
 
 def test_a_bk_cereal_with_no_command_readers_should_still_be_able_to_throw_an_unsupported_response():
     # Given a mock pyserial class defined with just a GettersAndSetters command_readers
-    command_readers = [GettersAndSetters()]
+    command_readers = [GettersAndSetters]
 
     # When we initialize it
     mock = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, command_readers=command_readers)()
@@ -109,7 +117,7 @@ def test_a_bk_cereal_with_no_command_readers_should_still_be_able_to_throw_an_un
 
 def test_that_a_python_dictionary_config_is_just_as_good_as_json():
     # Given a mock pyserial class defined by a python dictionary configuration
-    command_readers = [CannedQueries()]
+    command_readers = [CannedQueries]
     config = {
         "canned_queries": {
             "data": {
@@ -131,7 +139,7 @@ def test_that_a_python_dictionary_config_is_just_as_good_as_json():
 
 def test_that_a_python_dictionary_config_lets_you_use_getters_and_setters():
     # Given a mock pyserial class defined by a python dictionary configuration of getters and setters
-    command_readers = [GettersAndSetters()]
+    command_readers = [GettersAndSetters]
     config = {
         "getters_and_setters": {
             "default_values": {
@@ -200,3 +208,54 @@ def test_a_json_config_can_specify_command_readers_as_well():
     assert ok1 == b"OK\r>"
     assert one_hund == b"100\r>"
     assert ok2 == b"OK\r>"
+
+
+def test_that_you_can_pass_in_a_custom_hook_through_the_config_dict_as_a_str_and_obj(canned_queries_config):
+    # Given custom hooks
+    @register_hook(hook_type_enum=HookTypes.post_reading, hooked_classes=[CannedQueries])
+    def hook1(self, hooked, result, data, **kwargs):
+        return "01"
+
+    @register_hook(hook_type_enum=HookTypes.post_reading, hooked_classes=[CannedQueries])
+    def hook2(self, hooked, result, data, **kwargs):
+        return "02"
+
+    # and a config dictionary that references hooks by name and by the actual object
+    canned_queries_config["hooks"] = {
+        "hook1": {"attributes": ["3\r"], "include_or_exclude": "include"},
+        hook2: {"attributes": ["4\r"], "include_or_exclude": "include"},
+    }
+
+    # When we initialize it and issue our serial command
+    mock = Cereal(config=canned_queries_config)()
+    zero1 = query_device(mock, "3")
+    zero2 = query_device(mock, "4")
+
+    # Then the hooks returns 01 and 02
+    assert zero1 == b"01"
+    assert zero2 == b"02"
+
+
+def test_that_you_can_pass_in_a_custom_command_reader_through_the_config_dict_as_a_str_and_obj(canned_queries_config):
+    # Given custom command readers
+    class CommandReader1(BaseCommandReaders):
+        def get_reading(self, data):
+            if "1" in data:
+                return "Command Reader1"
+
+    class CommandReader2(BaseCommandReaders):
+        def get_reading(self, data):
+            if "2" in data:
+                return "Command Reader2"
+
+    # and a config dictionary that reference the command readers by name and by the actual object
+    canned_queries_config["command_readers"] = ["CommandReader1", CommandReader2]
+
+    # When we initialize it and issue our serial command
+    mock = Cereal(config=canned_queries_config)()
+    cr1 = query_device(mock, "1")
+    cr2 = query_device(mock, "2")
+
+    # Then the hooks returns b"Command Reader1" and "Command Reader2"
+    assert cr1 == b"Command Reader1"
+    assert cr2 == b"Command Reader2"

@@ -27,7 +27,7 @@ getter before you call a setter.
 
 
 The getter serial commands and their responses. The getter commands are specified as a string with your eol characters,
-and the response is a string with :doc:`Jinja2 <jinja2:usage/extensions/intersphinx>` variable formatting.
+and the response is a string with :std:doc:`Jinja2 <intro>` variable formatting.
 
 This allows you to do basic equations inside the response, such as combining multiple attributes,
 doing unit conversion, and other things.
@@ -36,7 +36,7 @@ doing unit conversion, and other things.
 ------------------
 
 The setter serial commands and their responses. The setter commands change the stored attributes you initially set up
-inside ``"default_values"``. Both the commands and responses uses :doc:`Jinja2 <jinja2:usage/extensions/intersphinx>`
+inside ``"default_values"``. Both the commands and responses uses :std:doc:`Jinja2 <intro>`
 variable formatting.
 
 .. caution::

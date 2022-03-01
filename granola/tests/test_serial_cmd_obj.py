@@ -74,7 +74,7 @@ def test_that_you_can_specify_a_delay_on_one_command():
 
     # When we initialize it
     mock = Cereal(config=config)()
-    df = mock._readers["CannedQueries"].serial_dfs["`DEFAULT`"]
+    df = mock._readers_["CannedQueries"].serial_dfs["`DEFAULT`"]
 
     # Then 2 has a delay of 3 but get -sn does not have any delay (nan)
     assert_filled_all(df.loc[(df.cmd == "2\r")]["delay"] == 3)
@@ -86,7 +86,7 @@ def test_that_you_can_specify_a_delay_on_one_command_and_a_broadcasting_delay_fo
 
     # When we initialize it
     mock = Cereal(config=canned_queries_config)()
-    df = mock._readers["CannedQueries"].serial_dfs["`DEFAULT`"]
+    df = mock._readers_["CannedQueries"].serial_dfs["`DEFAULT`"]
 
     # Then 3 gets the default delay of 3, but 2 has a delay of 0 since we that is the default
     assert_filled_all(df.loc[(df.cmd == "3\r")]["delay"] == 3)
@@ -98,7 +98,7 @@ def test_that_you_can_specify_a_inside_a_response_list(canned_queries_config):
 
     # When we initialize it
     mock = Cereal(config=canned_queries_config)()
-    df = mock._readers["CannedQueries"].serial_dfs["`DEFAULT`"]
+    df = mock._readers_["CannedQueries"].serial_dfs["`DEFAULT`"]
 
     # THen the delays inside lists should specify columns
     assert_filled_all(df.loc[(df.cmd == "1\r")]["delay"] == 0)
@@ -112,7 +112,7 @@ def test_that_that_all_off_the_ways_to_specify_canned_queries_inside_dicts_can_g
 
     # When we initialize it
     mock = Cereal(config=canned_queries_config)()
-    df = mock._readers["CannedQueries"].serial_dfs["`DEFAULT`"]
+    df = mock._readers_["CannedQueries"].serial_dfs["`DEFAULT`"]
 
     # THen we should get get the delays inside lists should specify columns
     assert_filled_all(df.loc[(df.cmd == "1\r")]["delay"] == 0)
