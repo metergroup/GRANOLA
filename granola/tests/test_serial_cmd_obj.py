@@ -2,11 +2,11 @@ from granola import Cereal
 from granola.tests.conftest import CONFIG_PATH, assert_filled_all, query_device
 
 
-def test_that_you_can_pass_canned_queries_directly_instead_of_as_file_paths(canned_queries_config):
+def test_that_you_can_pass_canned_queries_directly_instead_of_as_file_paths(canned_queries_command_readers):
     # Given a mock pyserial class defined by a python dictionary configuration with canned queries directly
 
     # When we initialize it
-    mock = Cereal(config=canned_queries_config)()
+    mock = Cereal(command_readers=canned_queries_command_readers)()
     # and query it
     one = query_device(mock, "1")
 
@@ -14,11 +14,11 @@ def test_that_you_can_pass_canned_queries_directly_instead_of_as_file_paths(cann
     assert one == b"1"
 
 
-def test_that_you_can_pass_canned_queries_directly_with_multiple_response(canned_queries_config):
+def test_that_you_can_pass_canned_queries_directly_with_multiple_response(canned_queries_command_readers):
     # Given a mock pyserial class defined by a python dictionary configuration with canned queries directly
 
     # When we initialize it
-    mock = Cereal(config=canned_queries_config)()
+    mock = Cereal(command_readers=canned_queries_command_readers)()
     # and issue get temp twice
     a4 = query_device(mock, "4")
     b4 = query_device(mock, "4")
@@ -28,11 +28,11 @@ def test_that_you_can_pass_canned_queries_directly_with_multiple_response(canned
     assert b4 == b"4b"
 
 
-def test_that_you_can_pass_canned_queries_directly_with_multiple_commands(canned_queries_config):
+def test_that_you_can_pass_canned_queries_directly_with_multiple_commands(canned_queries_command_readers):
     # Given a mock pyserial class defined by a python dictionary configuration with canned queries directly
 
     # When we initialize it
-    mock = Cereal(config=canned_queries_config)()
+    mock = Cereal(command_readers=canned_queries_command_readers)()
     # and issue all of our serial commands
     a4 = query_device(mock, "4")
     b4 = query_device(mock, "4")
@@ -50,7 +50,7 @@ def test_that_you_can_pass_canned_queries_directly_with_multiple_commands_from_j
     # Given a mock pyserial class defined by a json dictionary configuration with canned queries directly
 
     # When we initialize it
-    mock = Cereal.mock_from_file("dictionary", config_path=CONFIG_PATH)()
+    mock = Cereal.mock_from_json("dictionary", config_path=CONFIG_PATH)()
     # and issue all of our serial commands
     twenty = query_device(mock, "get -temp")
     twenty_two = query_device(mock, "get -temp")
@@ -66,14 +66,14 @@ def test_that_you_can_pass_canned_queries_directly_with_multiple_commands_from_j
 
 def test_that_you_can_specify_a_delay_on_one_command():
     # Given a dictionary canned queries with a delay on only one command
-    config = {
-        "canned_queries": {
+    command_readers = {
+        "CannedQueries": {
             "data": {"`DEFAULT`": {"1\r": "1", "2\r": {"response": "3", "delay": 3}}},
         }
     }
 
     # When we initialize it
-    mock = Cereal(config=config)()
+    mock = Cereal(command_readers=command_readers)()
     df = mock._readers_["CannedQueries"].serial_dfs["`DEFAULT`"]
 
     # Then 2 has a delay of 3 but get -sn does not have any delay (nan)
@@ -81,11 +81,11 @@ def test_that_you_can_specify_a_delay_on_one_command():
     assert_filled_all(df.loc[(df.cmd == "1\r")]["delay"].isna())
 
 
-def test_that_you_can_specify_a_delay_on_one_command_and_a_broadcasting_delay_for_the_rest(canned_queries_config):
+def test_that_you_can_specify_a_delay_on_one_command_and_a_broadcasting_delay_for_the_rest(canned_queries_command_readers):
     # Given a dictionary canned queries with a default delay and a specific delay
 
     # When we initialize it
-    mock = Cereal(config=canned_queries_config)()
+    mock = Cereal(command_readers=canned_queries_command_readers)()
     df = mock._readers_["CannedQueries"].serial_dfs["`DEFAULT`"]
 
     # Then 3 gets the default delay of 3, but 2 has a delay of 0 since we that is the default
@@ -93,11 +93,11 @@ def test_that_you_can_specify_a_delay_on_one_command_and_a_broadcasting_delay_fo
     assert_filled_all(df.loc[(df.cmd == "2\r")]["delay"] == 0)
 
 
-def test_that_you_can_specify_a_inside_a_response_list(canned_queries_config):
+def test_that_you_can_specify_a_inside_a_response_list(canned_queries_command_readers):
     # Given a dictionary canned queries with a default delay and a specific delay
 
     # When we initialize it
-    mock = Cereal(config=canned_queries_config)()
+    mock = Cereal(command_readers=canned_queries_command_readers)()
     df = mock._readers_["CannedQueries"].serial_dfs["`DEFAULT`"]
 
     # THen the delays inside lists should specify columns
@@ -107,11 +107,11 @@ def test_that_you_can_specify_a_inside_a_response_list(canned_queries_config):
     assert_filled_all(df.loc[(df.cmd == "7\r") & (df.response == "7b")]["delay"] == 0)
 
 
-def test_that_that_all_off_the_ways_to_specify_canned_queries_inside_dicts_can_go_together(canned_queries_config):
+def test_that_that_all_off_the_ways_to_specify_canned_queries_inside_dicts_can_go_together(canned_queries_command_readers):
     # Given a dictionary canned queries with a default delay and a specific delay
 
     # When we initialize it
-    mock = Cereal(config=canned_queries_config)()
+    mock = Cereal(command_readers=canned_queries_command_readers)()
     df = mock._readers_["CannedQueries"].serial_dfs["`DEFAULT`"]
 
     # THen we should get get the delays inside lists should specify columns

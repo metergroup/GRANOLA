@@ -64,7 +64,7 @@ def test_that_a_bk_cereal_can_be_used_with_the_default_path_from_root():
     # Given a mock serial we set up from the default path
 
     # When we initialize it
-    Cereal.mock_from_file("fake device")()
+    Cereal.mock_from_json("fake device")()
     # Then It should be fine, and nothing should error out
 
 
@@ -72,14 +72,14 @@ def test_that_a_bk_cereal_can_be_used_with_the_default_path_from_root_and_use_ge
     # Given a mock serial we set up from the default path
 
     # When we initialize it and query from it
-    default_path_serial = Cereal.mock_from_file("fake device")()
+    default_path_serial = Cereal.mock_from_json("fake device")()
     value = query_device(default_path_serial, "get -my value")
     # or try an undefined command
     unsupported = query_device(default_path_serial, "garbage query")
 
     # then the returned real query should match the expected response
     decoded_value = decode_response(value, default_path_serial)
-    true_value = default_path_serial._config["getters_and_setters"]["default_values"]["my_value"]
+    true_value = default_path_serial._readers_["GettersAndSetters"].instrument_attributes["my_value"].value
     assert true_value == decoded_value
     # and the returned unsupported response should match the expected unsupported response
     true_unsupported = b"Unsupported\r>"
@@ -183,7 +183,7 @@ def test_incorrect_getter_will_raise_value_error():
 
     # When you try to initialize it
     with pytest.raises(ValueError):
-        Cereal.mock_from_file(config_key=config_key, config_path=CONFIG_PATH)
+        Cereal.mock_from_json(config_key=config_key, config_path=CONFIG_PATH)
         # Then it should raise a value error
 
 
@@ -193,5 +193,5 @@ def test_incorrect_setter_will_raise_value_error():
 
     # When you try to initialize it
     with pytest.raises(ValueError):
-        Cereal.mock_from_file(config_key=config_key, config_path=CONFIG_PATH)
+        Cereal.mock_from_json(config_key=config_key, config_path=CONFIG_PATH)
         # Then it should raise a value error

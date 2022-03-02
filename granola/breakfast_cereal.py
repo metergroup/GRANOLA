@@ -87,23 +87,24 @@ class Cereal(Serial):
             serial.
 
             .. deprecated:: 0.9
-                Use alternative constructor :meth:`mock_from_file` instead.
+                Use alternative constructor :meth:`mock_from_json` instead.
 
     See Also
     --------
-    Cereal.mock_from_file: Constructor from external configuration file.
+    Cereal.mock_from_json: Constructor from external configuration file.
     """
 
     @add_created_at
-    def __init__(self, config=None, config_path=None, command_readers=None, hooks=None, config_key=None):
+    def __init__(self, config=None, config_path=None, command_readers=None, hooks=None, unsupported_response="Unsupported\r>", encoding="ascii", config_key=None):
         self._config_path = config_path if config_path is not None else os.path.join(os.getcwd(), "config.json")
         hooks = hooks if hooks is not None else []
+        command_readers = command_readers if command_readers is not None else []
 
         config = self._check_and_normalize_config_deprecation(config, config_key)
 
         self._config = config
-        self._unsupported_response = self._config.get("unsupported_response", "Unsupported\r>")
-        self._encoding = self._config.get("encoding", "ascii")
+        self._unsupported_response = unsupported_response
+        self._encoding = encoding
         self._write_terminator = "\r"  # TODO madeline, make this something to pass in from config.
 
         self._readers_ = self._setup_command_readers(command_readers, hooks)
@@ -118,9 +119,22 @@ class Cereal(Serial):
             self._isOpen = True
 
     @classmethod
-    def mock_from_file(cls, config_key, config_path="config.json", *args, **kwargs):
+    def mock_from_json(cls, config_key, config_path="config.json", *args, **kwargs):
         config = cls._load_config(config_key=config_key, config_path=config_path)
-        return cls(config=config, config_path=config_path, *args, **kwargs)
+        if "canned_queries" in config:
+            deprecation("Specifically CannedQueries Command Reader through the outermost config key 'canned_queries"
+                        " is deprecated. Please use the 'command_reader' section instead."
+                        " See https://granola.readthedocs.io/en/latest/config/config.html for more details.")
+            cq = config.pop("canned_queries")
+            config.setdefault("command_readers", {})["CannedQueries"] = cq
+        if "getters_and_setters" in config:
+            deprecation("Specifically GettersAnd_setters Command Reader through the outermost config key"
+                        " 'getters_and_setters is deprecated. Please use the 'command_reader' section instead."
+                        " See https://granola.readthedocs.io/en/latest/config/config.html for more details.")
+            gs = config.pop("getters_and_setters")
+            config.setdefault("command_readers", {})["GettersAndSetters"] = gs
+        kwargs.update(config)
+        return cls(config_path=config_path, *args, **kwargs)
 
     @classmethod
     def _load_config(cls, config_key, config_path):
@@ -311,19 +325,19 @@ class Cereal(Serial):
 
     def _setup_command_readers(self, command_readers, hooks):
         readers = OrderedDict()
-        config_command_readers = self._read_file_config_command_readers()
+        config_command_readers = self._read_file_config_command_readers(command_readers)
         if config_command_readers:
             for reader in config_command_readers:
                 readers[reader.__class__.__name__] = reader
         else:
             # deprecation("")
-            if not command_readers:
-                command_readers = (GettersAndSetters, CannedQueries)
+            # if not command_readers:
+            command_readers = (GettersAndSetters, CannedQueries)
             for reader in command_readers:
-                cr = reader._from_config(config=self._config, config_path=self._config_path)
+                cr = reader()
                 readers[cr.__class__.__name__] = cr
 
-        config_hooks = self._read_file_config_hooks()
+        config_hooks = self._read_file_config_hooks(hooks)
         if config_hooks:
             hooks = config_hooks
         for hook in hooks:
@@ -337,28 +351,27 @@ class Cereal(Serial):
 
         return readers
 
-    def _read_file_config_from_classes(key, baseclass):
+    def _read_file_config_from_classes(baseclass):
         """
-        closure to generate functions that will grab ``key`` from config then each class is used
-        to match to a subclass of ``baseclass``. This allows users to pass in classes they want to use
-        for things like hooks, CommandReaders or other things inside a configuration dictionary (JSON).
+        closure to generate functions that will match passed in configuration option classes
+        to a subclass of ``baseclass``. This allows users to pass in classes they want to use
+        for things like Hooks, CommandReaders or other things inside a configuration dictionary (JSON).
 
         Args:
-            key (str): The key to look up in the config dictionary
-            baseclass (class): Class to check all subclasses of when you know the class name from
-                ``subkey``
+            baseclass (class): Class to check all subclasses of when you know class from config_options
         """
 
-        def _inner(self):
-            config_options = self._config.get(key, [])
+        def _inner(self, config_options):
             subclasses = _get_subclasses(baseclass)
             classes = []
             if isinstance(config_options, list):
                 for cls in config_options:
                     if isinstance(cls, str):
                         c = subclasses[cls]()
-                    else:
+                    elif inspect.isclass(cls):
                         c = cls()
+                    else:
+                        c = cls
                     classes.append(c)
             else:
                 for cls, options in config_options.items():
@@ -374,9 +387,9 @@ class Cereal(Serial):
 
         return _inner
 
-    _read_file_config_hooks = _read_file_config_from_classes("hooks", BaseHook)
+    _read_file_config_hooks = _read_file_config_from_classes(BaseHook)
 
-    _read_file_config_command_readers = _read_file_config_from_classes("command_readers", BaseCommandReaders)
+    _read_file_config_command_readers = _read_file_config_from_classes(BaseCommandReaders)
 
     def _check_and_normalize_config_deprecation(self, config, config_key):
         if isinstance(config, str):
@@ -385,7 +398,7 @@ class Cereal(Serial):
             deprecation(
                 "Instantiating Cereal with `config_path` and `config_key` is deprecated"
                 " and will be removed in a future release."
-                "\nPlease use `Cereal.mock_from_file(config_key, config_path)` instead"
+                "\nPlease use `Cereal.mock_from_json(config_key, config_path)` instead"
             )
             config = self._load_config(config_key=config_key, config_path=self._config_path)
 
@@ -395,7 +408,7 @@ class Cereal(Serial):
             end_not_in = "variable_end_string" not in getters_and_setters
             if getters_and_setters and start_not_in and end_not_in:
                 deprecation(
-                    "'getters_and_setters' variable declaration follows old format"
+                    "'GettersAndSetters' variable declaration follows old format"
                     " that will be removed in a future release."
                     "\nEither switch to traditional jinja2 formatting ({{ var }})"
                     "\nor specify explicitly your variable_start_string and variable_end_string inside"
@@ -403,7 +416,17 @@ class Cereal(Serial):
                 )
                 getters_and_setters["variable_start_string"] = "`"
                 getters_and_setters["variable_end_string"] = "`"
+        if "canned_queries" in config:
+            deprecation("Specifically CannedQueries Command Reader through the outermost config key 'canned_queries"
+                        " is deprecated. Please use the 'command_reader' section instead."
+                        " See https://granola.readthedocs.io/en/latest/config/config.html for more details.")
+            cq = config.pop("canned_queries")
+            config.setdefault("command_readers", {})["CannedQueries"] = cq
+        if "getters_and_setters" in config:
+            deprecation("Specifically GettersAnd_setters Command Reader through the outermost config key"
+                        " 'getters_and_setters is deprecated. Please use the 'command_reader' section instead."
+                        " See https://granola.readthedocs.io/en/latest/config/config.html for more details.")
+            gs = config.pop("getters_and_setters")
+            config.setdefault("command_readers", {})["GettersAndSetters"] = gs
 
-        if config is None:
-            raise AttributeError("Cereal __init__ requires a config dictionary")
         return config

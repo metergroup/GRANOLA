@@ -76,12 +76,12 @@ class SerialSnifferTester(SerialSniffer):
 
 @pytest.fixture
 def mock_cereal():
-    return Cereal.mock_from_file("cereal", config_path=CONFIG_PATH)()
+    return Cereal.mock_from_json("cereal", config_path=CONFIG_PATH)()
 
 
 @pytest.fixture
 def bk_cereal_only_getters_and_setters():
-    return Cereal.mock_from_file("just_getters_and_setters", config_path=CONFIG_PATH)()
+    return Cereal.mock_from_json("just_getters_and_setters", config_path=CONFIG_PATH)()
 
 
 @pytest.fixture
@@ -104,9 +104,9 @@ def mock_read():
 
 
 @pytest.fixture
-def canned_queries_config():
-    canned_queries = {
-        "canned_queries": {
+def canned_queries_command_readers():
+    command_readers = {
+        "CannedQueries": {
             "data": {
                 "`DEFAULT`": {
                     "1\r": "1",
@@ -123,4 +123,4 @@ def canned_queries_config():
             "delay": 0,
         }
     }
-    return canned_queries
+    return command_readers

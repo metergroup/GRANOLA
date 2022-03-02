@@ -268,7 +268,7 @@ class GettersAndSetters(BaseCommandReaders):
     """
 
     def __init__(
-        self, default_values, getters, setters, variable_start_string="{{", variable_end_string="}}", **kwargs
+        self, default_values=None, getters=None, setters=None, variable_start_string="{{", variable_end_string="}}", **kwargs
     ):
         super(GettersAndSetters, self).__init__(**kwargs)
         self._variable_start_string = variable_start_string
@@ -278,6 +278,9 @@ class GettersAndSetters(BaseCommandReaders):
             variable_end_string=variable_end_string,
             loader=jinja2.BaseLoader(),
         )
+        default_values = default_values if default_values is not None else OrderedDict()
+        getters = getters if getters is not None else OrderedDict()
+        setters = setters if setters is not None else OrderedDict()
         self.instrument_attributes = OrderedDict()
         self.getters = OrderedDict()
         self.setters = OrderedDict()
@@ -476,12 +479,12 @@ class CannedQueries(BaseCommandReaders):
         self.serial_dfs = OrderedDict()
         self.serial_generator = OrderedDict()
 
-        if DeprecatedDefaultDF in data:
+        if DeprecatedDefaultDF in self.data:
             deprecation("canned_queries['data'] key '_default_csv_' has been deprecated, Use '`DEFAULT`'")
-            default = data.pop(DeprecatedDefaultDF)
-            data[DefaultDF] = default
+            default = self.data.pop(DeprecatedDefaultDF)
+            self.data[DefaultDF] = default
 
-        for key, maybe_file in data.items():
+        for key, maybe_file in self.data.items():
             if isinstance(maybe_file, (str, Path)):
                 self.serial_cmd_files[key] = SerialCmds.from_file(maybe_file, config_path, **kwargs)
             elif isinstance(maybe_file, dict):
