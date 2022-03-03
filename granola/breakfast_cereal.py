@@ -19,7 +19,6 @@ from granola.utils import (
     add_created_at,
     check_min_package_version,
     decode_bytes,
-    deprecation,
     deunicodify_hook,
     encode_to_bytes,
     fixpath,
@@ -95,14 +94,21 @@ class Cereal(Serial):
     """
 
     @add_created_at
-    def __init__(self, config=None, config_path=None, command_readers=None, hooks=None, unsupported_response="Unsupported\r>", encoding="ascii", config_key=None):
+    def __init__(
+        self,
+        command_readers=None,
+        hooks=None,
+        config_path=None,
+        unsupported_response="Unsupported\r>",
+        encoding="ascii",
+    ):
         self._config_path = config_path if config_path is not None else os.path.join(os.getcwd(), "config.json")
         hooks = hooks if hooks is not None else []
         command_readers = command_readers if command_readers is not None else []
 
-        config = self._check_and_normalize_config_deprecation(config, config_key)
+        # config = self._check_and_normalize_config_deprecation(config, config_key)
 
-        self._config = config
+        # self._config = config
         self._unsupported_response = unsupported_response
         self._encoding = encoding
         self._write_terminator = "\r"  # TODO madeline, make this something to pass in from config.
@@ -121,18 +127,6 @@ class Cereal(Serial):
     @classmethod
     def mock_from_json(cls, config_key, config_path="config.json", *args, **kwargs):
         config = cls._load_config(config_key=config_key, config_path=config_path)
-        if "canned_queries" in config:
-            deprecation("Specifically CannedQueries Command Reader through the outermost config key 'canned_queries"
-                        " is deprecated. Please use the 'command_reader' section instead."
-                        " See https://granola.readthedocs.io/en/latest/config/config.html for more details.")
-            cq = config.pop("canned_queries")
-            config.setdefault("command_readers", {})["CannedQueries"] = cq
-        if "getters_and_setters" in config:
-            deprecation("Specifically GettersAnd_setters Command Reader through the outermost config key"
-                        " 'getters_and_setters is deprecated. Please use the 'command_reader' section instead."
-                        " See https://granola.readthedocs.io/en/latest/config/config.html for more details.")
-            gs = config.pop("getters_and_setters")
-            config.setdefault("command_readers", {})["GettersAndSetters"] = gs
         kwargs.update(config)
         return cls(config_path=config_path, *args, **kwargs)
 
@@ -390,43 +384,3 @@ class Cereal(Serial):
     _read_file_config_hooks = _read_file_config_from_classes(BaseHook)
 
     _read_file_config_command_readers = _read_file_config_from_classes(BaseCommandReaders)
-
-    def _check_and_normalize_config_deprecation(self, config, config_key):
-        if isinstance(config, str):
-            config_key = config
-        if config_key is not None:
-            deprecation(
-                "Instantiating Cereal with `config_path` and `config_key` is deprecated"
-                " and will be removed in a future release."
-                "\nPlease use `Cereal.mock_from_json(config_key, config_path)` instead"
-            )
-            config = self._load_config(config_key=config_key, config_path=self._config_path)
-
-            # Check for old form of variable substitution pre jinja
-            getters_and_setters = config.get("getters_and_setters", {})
-            start_not_in = "variable_start_string" not in getters_and_setters
-            end_not_in = "variable_end_string" not in getters_and_setters
-            if getters_and_setters and start_not_in and end_not_in:
-                deprecation(
-                    "'GettersAndSetters' variable declaration follows old format"
-                    " that will be removed in a future release."
-                    "\nEither switch to traditional jinja2 formatting ({{ var }})"
-                    "\nor specify explicitly your variable_start_string and variable_end_string inside"
-                    " getters and setters (ex: 'variable_start_string': '`')"
-                )
-                getters_and_setters["variable_start_string"] = "`"
-                getters_and_setters["variable_end_string"] = "`"
-        if "canned_queries" in config:
-            deprecation("Specifically CannedQueries Command Reader through the outermost config key 'canned_queries"
-                        " is deprecated. Please use the 'command_reader' section instead."
-                        " See https://granola.readthedocs.io/en/latest/config/config.html for more details.")
-            cq = config.pop("canned_queries")
-            config.setdefault("command_readers", {})["CannedQueries"] = cq
-        if "getters_and_setters" in config:
-            deprecation("Specifically GettersAnd_setters Command Reader through the outermost config key"
-                        " 'getters_and_setters is deprecated. Please use the 'command_reader' section instead."
-                        " See https://granola.readthedocs.io/en/latest/config/config.html for more details.")
-            gs = config.pop("getters_and_setters")
-            config.setdefault("command_readers", {})["GettersAndSetters"] = gs
-
-        return config

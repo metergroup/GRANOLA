@@ -14,6 +14,7 @@ else:
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 CONFIG_PATH = os.path.join(current_dir, "config.json")
+CONFIG_PATH_DEPRECATIONS = os.path.join(current_dir, "config_deprecations.json")
 
 
 def assert_filled_all(mask):

@@ -209,7 +209,7 @@ def test_a_json_config_can_specify_command_readers_as_well():
     assert ok2 == b"OK\r>"
 
 
-def test_that_you_can_pass_in_a_custom_hook_through_the_config_dict_as_a_str_and_obj(canned_queries_config):
+def test_that_you_can_pass_in_a_custom_hook_through_the_config_dict_as_a_str_and_obj():
     # Given custom hooks
     @register_hook(hook_type_enum=HookTypes.post_reading, hooked_classes=[CannedQueries])
     def hook1(self, hooked, result, data, **kwargs):
@@ -235,7 +235,7 @@ def test_that_you_can_pass_in_a_custom_hook_through_the_config_dict_as_a_str_and
     assert zero2 == b"02"
 
 
-def test_that_you_can_pass_in_a_custom_command_reader_through_the_config_dict_as_a_str_and_obj(canned_queries_config):
+def test_that_you_can_pass_in_a_custom_command_reader_through_the_config_dict_as_a_str_and_obj():
     # Given custom command readers
     class CommandReader1(BaseCommandReaders):
         def get_reading(self, data):

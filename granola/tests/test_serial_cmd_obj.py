@@ -81,7 +81,9 @@ def test_that_you_can_specify_a_delay_on_one_command():
     assert_filled_all(df.loc[(df.cmd == "1\r")]["delay"].isna())
 
 
-def test_that_you_can_specify_a_delay_on_one_command_and_a_broadcasting_delay_for_the_rest(canned_queries_command_readers):
+def test_that_you_can_specify_a_delay_on_one_command_and_a_broadcasting_delay_for_the_rest(
+    canned_queries_command_readers,
+):
     # Given a dictionary canned queries with a default delay and a specific delay
 
     # When we initialize it
@@ -107,7 +109,9 @@ def test_that_you_can_specify_a_inside_a_response_list(canned_queries_command_re
     assert_filled_all(df.loc[(df.cmd == "7\r") & (df.response == "7b")]["delay"] == 0)
 
 
-def test_that_that_all_off_the_ways_to_specify_canned_queries_inside_dicts_can_go_together(canned_queries_command_readers):
+def test_that_that_all_off_the_ways_to_specify_canned_queries_inside_dicts_can_go_together(
+    canned_queries_command_readers,
+):
     # Given a dictionary canned queries with a default delay and a specific delay
 
     # When we initialize it

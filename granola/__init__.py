@@ -16,6 +16,7 @@ from granola.hooks.hooks import (
     StickCannedQueries,
     register_hook,
 )
+from granola.main import MockSerial  # deprecated
 from granola.serial_sniffer import SerialSniffer
 
 __version__ = get_versions()["version"]
@@ -28,6 +29,7 @@ __all__ = [
     "BaseCommandReaders",
     "SerialCmds",
     "Cereal",
+    "MockSerial",  # deprecated
     "DefaultDF",
     "PortNotOpenError",
     "GettersAndSetters",

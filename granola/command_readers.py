@@ -14,14 +14,7 @@ import jinja2.meta
 import pandas as pd
 
 from granola.hooks.base_hook import wrap_in_hooks
-from granola.utils import (
-    ABC,
-    IS_PYTHON3,
-    SENTINEL,
-    deprecation,
-    fixpath,
-    load_serial_df,
-)
+from granola.utils import ABC, IS_PYTHON3, SENTINEL, fixpath, load_serial_df
 
 try:
     from enum import Enum, auto
@@ -268,7 +261,13 @@ class GettersAndSetters(BaseCommandReaders):
     """
 
     def __init__(
-        self, default_values=None, getters=None, setters=None, variable_start_string="{{", variable_end_string="}}", **kwargs
+        self,
+        default_values=None,
+        getters=None,
+        setters=None,
+        variable_start_string="{{",
+        variable_end_string="}}",
+        **kwargs
     ):
         super(GettersAndSetters, self).__init__(**kwargs)
         self._variable_start_string = variable_start_string
@@ -352,15 +351,6 @@ class GettersAndSetters(BaseCommandReaders):
         Loads all getters from getters_and_setters["getters"] into `self.getters`. If getter
         does not get an attribute in self.instrument_attributes, raise Value Error"""
         for getter in getters:
-            if "getter" in getter:
-                deprecation(
-                    "Using 'getter' key inside 'getter_and_setters'"
-                    "(config['getters_and_setters']['getters']['getter']"
-                    "is deprecated and will be removed in a future release."
-                    "\nSwitch to using the key 'cmd' instead."
-                )
-                getter["cmd"] = getter.pop("getter")
-
             self._check_attributes_are_valid("getters", getter)
 
             self.getters[getter["cmd"]] = getter["response"]
@@ -370,14 +360,6 @@ class GettersAndSetters(BaseCommandReaders):
         Loads all setters from getters_and_setters["setters"] into `self.setters`. If setter
         does not get an attribute in self.instrument_attributes, raise Value Error"""
         for setter in setters:
-            if "setter" in setter:
-                deprecation(
-                    "Using 'setter' key inside 'getter_and_setters'"
-                    "(config['getters_and_setters']['setters']['setter']"
-                    "is deprecated and will be removed in a future release."
-                    "\nSwitch to using the key 'cmd' instead."
-                )
-                setter["cmd"] = setter.pop("setter")
             self._check_attributes_are_valid("setters", setter)
 
             regex = "{variable_start}(.*?){variable_end}".format(
@@ -479,11 +461,6 @@ class CannedQueries(BaseCommandReaders):
         self.serial_dfs = OrderedDict()
         self.serial_generator = OrderedDict()
 
-        if DeprecatedDefaultDF in self.data:
-            deprecation("canned_queries['data'] key '_default_csv_' has been deprecated, Use '`DEFAULT`'")
-            default = self.data.pop(DeprecatedDefaultDF)
-            self.data[DefaultDF] = default
-
         for key, maybe_file in self.data.items():
             if isinstance(maybe_file, (str, Path)):
                 self.serial_cmd_files[key] = SerialCmds.from_file(maybe_file, config_path, **kwargs)
@@ -495,11 +472,6 @@ class CannedQueries(BaseCommandReaders):
     @classmethod
     def _from_config(cls, config, config_path=None, **kwargs):
         canned_queries = config.get("canned_queries", {})
-
-        if "files" in canned_queries and isinstance(canned_queries["files"], dict):
-            deprecation("canned_queries key 'files' has been deprecated. Use the key 'data' instead.")
-            data = canned_queries.pop("files")
-            canned_queries["data"] = data
 
         kwargs.update({key: item for key, item in canned_queries.items() if key != "data"})
         data = canned_queries.get("data", {})
@@ -543,19 +515,7 @@ class CannedQueries(BaseCommandReaders):
 
         canned_queries = self._config.get("canned_queries", {})
 
-        if "files" in canned_queries and isinstance(canned_queries["files"], dict):
-            deprecation("canned_queries key 'files' has been deprecated. Use the key 'data' instead.")
-            data = canned_queries.pop("files")
-            canned_queries["data"] = data
-
         extra_fields = {key: item for key, item in canned_queries.items() if key != "data"}
-
-        data = canned_queries.get("data", {})
-
-        if DeprecatedDefaultDF in data:
-            deprecation("canned_queries['data'] key '_default_csv_' has been deprecated, Use '`DEFAULT`'")
-            default = data.pop(DeprecatedDefaultDF)
-            data[DefaultDF] = default
 
         for key, maybe_file in canned_queries.get("data", {}).items():
             if isinstance(maybe_file, (str, Path)):
