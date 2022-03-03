@@ -28,19 +28,19 @@ class MockSerial(Cereal):
             cq = config.pop("canned_queries")
             command_readers["CannedQueries"] = cq
 
-            cq = command_readers["CannedQueries"]
+            cr = command_readers["CannedQueries"]
 
-            if "files" in cq:
+            if "files" in cr:
                 deprecation("canned_queries key 'files' has been deprecated. Use the key 'data' instead.", "1.0")
-                cq["data"] = cq.pop("files")
+                cr["data"] = cr.pop("files")
 
-            if DeprecatedDefaultDF in cq.get("data", {}):
+            if DeprecatedDefaultDF in cr.get("data", {}):
                 deprecation(
                     "command_readers['CannedQueries']['data'] key '_default_csv_' has been deprecated,"
                     " Use '`DEFAULT`' instead",
                     "1.0",
                 )
-                cq["data"][DefaultDF] = cq["data"].pop(DeprecatedDefaultDF)
+                cr["data"][DefaultDF] = cr["data"].pop(DeprecatedDefaultDF)
 
         if "getters_and_setters" in config:
             deprecation(
