@@ -374,8 +374,10 @@ class Cereal(Serial):
                     opts.update(options)
                     if isinstance(cls, str):
                         c = subclasses[cls](**opts)
-                    else:
+                    elif inspect.isclass(cls):
                         c = cls(**opts)
+                    else:
+                        c = cls
                     classes.append(c)
             return classes
 
