@@ -55,11 +55,11 @@ def check_deprecation(*msgs):
         def _check_deprecation(func):
             @functools.wraps(func)
             def _inner(*args, **kwargs):
-                with warnings.catch_warnings(record=True) as w:
+                with pytest.deprecated_call() as dep:
                     r = func(*args, **kwargs)
                     found_warning = False
                     for msg in msgs:
-                        for warning in w:
+                        for warning in dep.list:
                             if issubclass(warning.category, Warning) and msg.lower() in str(warning.message).lower():
                                 found_warning = True
                                 break

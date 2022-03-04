@@ -175,5 +175,5 @@ def _get_subclasses(cls):
 def deprecation(message, version_to_remove=None):
     warnings.simplefilter("always", DeprecationWarning)
     if version_to_remove:
-        message += f"\nScheduled to be removed on version {version_to_remove}"
+        message += "\nScheduled to be removed on version {version}".format(version=version_to_remove)
     warnings.warn(message, DeprecationWarning)

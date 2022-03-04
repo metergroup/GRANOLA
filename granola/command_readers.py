@@ -242,7 +242,7 @@ class BaseCommandReaders(ABC):
     def assign_default_hook(self):
         """If self._hooks_ hooks is empty, add any default hooks for this Command Reader."""
         if not self._hooks_:
-            ...
+            pass
 
 
 class GettersAndSetters(BaseCommandReaders):
