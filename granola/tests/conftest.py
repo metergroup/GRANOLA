@@ -27,6 +27,15 @@ def assert_filled_any(mask):
     assert mask.any()
 
 
+def all_equal(iterator):
+    iterator = iter(iterator)
+    try:
+        first = next(iterator)
+    except StopIteration:
+        return True
+    return all(first == x for x in iterator)
+
+
 def query_device(bk_cereal, cmd):
     bk_cereal.write(("{cmd}\r".format(cmd=cmd)).encode(bk_cereal._encoding))
     return bk_cereal.read(1000)
@@ -108,8 +117,8 @@ def mock_read():
 def canned_queries_command_readers():
     command_readers = {
         "CannedQueries": {
-            "data": {
-                "`DEFAULT`": {
+            "data": [
+                {
                     "1\r": "1",
                     "2\r": {"response": "2"},
                     "3\r": {"response": "3", "delay": 3},
@@ -120,7 +129,7 @@ def canned_queries_command_readers():
                     "8\r": {"response": [["8a", {"delay": 8.1}], "8b"], "delay": 8},
                     "9\r": [["9a", {"delay": 9}], "9b"],
                 }
-            },
+            ],
             "delay": 0,
         }
     }

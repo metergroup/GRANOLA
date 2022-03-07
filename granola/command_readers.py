@@ -8,44 +8,25 @@ import re
 from collections import OrderedDict
 from pathlib import Path
 
-import attr
 import jinja2
 import jinja2.meta
 import pandas as pd
 
+from granola.enums import RandomizeResponse, get_attribute_from_enum, validate_enum
 from granola.hooks.base_hook import wrap_in_hooks
 from granola.utils import ABC, IS_PYTHON3, SENTINEL, fixpath, load_serial_df
 
-try:
-    from enum import Enum, auto
-except ImportError:
-    from aenum import Enum, auto
-
 logger = logging.getLogger(__name__)
 
-DefaultDF = "`DEFAULT`"  # Default dataframe key
-DeprecatedDefaultDF = "_default_csv_"  # Default dataframe key
 
-
-class RandomizeResponse(Enum):
-    """Randomize response enum"""
-
-    not_randomized = auto()  # Don't randomize
-    randomized = auto()  # Randomize and replace
-    randomized_and_remove = auto()  # Randomize and remove
-
-
-@attr.s
 class SerialCmds(object):
     """
     Serial Command DataFrame container object. Required columns for DataFrame are `cmd` and `response`,
     Other columns are optional, and may or may not be used by certain Command Readers.
 
     Args:
-        data (pd.DataFrame): DataFrame containing serial command, response pairs, as well potentially other
-            columns.
-
-        --- Not currently being used ---
+        data (list[pd.DataFrame]): list of DataFrames containing serial command, response pairs,
+            as well potentially other columns.
         will_randomize_responses (RandomizeResponse): Whether the responses of each command will be
             randomized or not.
 
@@ -56,16 +37,17 @@ class SerialCmds(object):
         Config guide :ref:`Canned Queries Configuration`
     """
 
-    data = attr.ib(type=pd.DataFrame)
-    will_randomize_responses = attr.ib(
-        type=RandomizeResponse,
-        default=RandomizeResponse.not_randomized,
-    )
+    def __init__(self, data=None, will_randomize_responses=RandomizeResponse.not_randomized):
+        self.data = data if data is not None else []  # type: list[pd.DataFrame]
+        self.will_randomize_responses = get_attribute_from_enum(will_randomize_responses, "name")
+        validate_enum(self.will_randomize_responses, RandomizeResponse)
 
-    @classmethod
-    def from_file(cls, file, config_path=None, **kwargs):
+    def add_dataframe(self, df):
+        self.data.append(df)
+
+    def add_df_from_file(self, file, config_path=None, **kwargs):
         """
-        Generate a `SerialCmds` from a csv file path
+        Add a df to data from a csv file path
 
         Args:
             file (str): Path to csv file. Required
@@ -85,13 +67,12 @@ class SerialCmds(object):
         logger.debug("Canned query path %s: ", file)
         df = load_serial_df(file)
         if kwargs:
-            cls._append_extra_fields_to_df(df, **kwargs)
-        return cls(data=df)
+            self._append_extra_fields_to_df(df, **kwargs)
+        return self.add_dataframe(df)
 
-    @classmethod
-    def from_dict(cls, dic, **kwargs):
+    def add_df_from_dict(self, dic, **kwargs):
         """
-        Generate a `SerialCmds` from a dictionary of serial commands. The format for this dictionary
+        Add a df to data from a dictionary of serial commands. The format for this dictionary
         can take a few forms. It can either be expressed in a JSON configuration or passed in python
         to Cereal. Here is the most basic form, where each command is mapped directly to a single response.
 
@@ -105,19 +86,18 @@ class SerialCmds(object):
         data = []
         d = copy.deepcopy(dic)
         for cmd, value in d.items():
-            cls._transverse_dict_and_append(data, cmd, value)
+            self._transverse_dict_and_append(data, cmd, value)
         df = pd.DataFrame.from_records(data)
         if kwargs:
-            cls._append_extra_fields_to_df(df, **kwargs)
-        return cls(data=df)
+            self._append_extra_fields_to_df(df, **kwargs)
+        return self.add_dataframe(df)
 
-    @classmethod
-    def _transverse_dict_and_append(cls, data, cmd, value, **extra_fields):
+    def _transverse_dict_and_append(self, data, cmd, value, **extra_fields):
         if isinstance(value, (str, int, float)):  # End of node
-            cls._append_to_list_of_rows(data, cmd, value, **extra_fields)
+            self._append_to_list_of_rows(data, cmd, value, **extra_fields)
             return
 
-        inner_extra_fields, response = cls._extract_respose(value)
+        inner_extra_fields, response = self._extract_respose(value)
 
         if isinstance(response, (list, tuple)):
             for index, item in enumerate(response):
@@ -150,11 +130,11 @@ class SerialCmds(object):
                     }
                 else:
                     raise ValueError("Invalid JSON format for canned_queries")
-                cls._append_to_list_of_rows(data, cmd, response_, **extra_fields_)
+                self._append_to_list_of_rows(data, cmd, response_, **extra_fields_)
         else:
             response_ = response
             extra_fields_ = inner_extra_fields
-            cls._append_to_list_of_rows(data, cmd, response_, **extra_fields_)
+            self._append_to_list_of_rows(data, cmd, response_, **extra_fields_)
 
     @staticmethod
     def _extract_respose(value):
@@ -457,15 +437,16 @@ class CannedQueries(BaseCommandReaders):
 
         super(CannedQueries, self).__init__(config_path=config_path, **kwargs)
         self.data = data if data is not None else OrderedDict()
-        self.serial_cmd_files = OrderedDict()
-        self.serial_dfs = OrderedDict()
+        self.serial_df = pd.DataFrame(columns=["cmd", "response"])  # default empty df
+        serial_cmd_files_kwargs = self._extract_serial_cmd_file_kw_from_config(kwargs)
+        self.serial_cmd_file = SerialCmds(**serial_cmd_files_kwargs)
         self.serial_generator = OrderedDict()
 
-        for key, maybe_file in self.data.items():
+        for maybe_file in self.data:
             if isinstance(maybe_file, (str, Path)):
-                self.serial_cmd_files[key] = SerialCmds.from_file(maybe_file, config_path, **kwargs)
+                self.serial_cmd_file.add_df_from_file(maybe_file, config_path, **kwargs)
             elif isinstance(maybe_file, dict):
-                self.serial_cmd_files[key] = SerialCmds.from_dict(maybe_file, **kwargs)
+                self.serial_cmd_file.add_df_from_dict(maybe_file, **kwargs)
 
         self._seed_serial_dfs()
 
@@ -505,10 +486,9 @@ class CannedQueries(BaseCommandReaders):
         return next_read
 
     def _start_serial_generator(self, cmd):
-        df, serial_cmd_file = self._get_matching_df(cmd)
-        serial_df = self._filter_serial_df(df=df, cmd=cmd)  # type: pd.DataFrame
+        serial_df = self._filter_serial_df(cmd=cmd)  # type: pd.DataFrame
         if not serial_df.empty:
-            serial_df_generator = self._get_generator_from_df(serial_df, serial_cmd_file)
+            serial_df_generator = self._get_generator_from_df(serial_df, self.serial_cmd_file.will_randomize_responses)
             self.serial_generator[cmd] = serial_df_generator
 
     def _load_canned_queries(self, config_path):
@@ -519,11 +499,13 @@ class CannedQueries(BaseCommandReaders):
 
         for key, maybe_file in canned_queries.get("data", {}).items():
             if isinstance(maybe_file, (str, Path)):
-                self.serial_cmd_files[key] = SerialCmds.from_file(maybe_file, config_path, extra_fields=extra_fields)
+                self.serial_cmd_file[key] = SerialCmds.add_df_from_file(
+                    maybe_file, config_path, extra_fields=extra_fields
+                )
             elif isinstance(maybe_file, dict):
-                self.serial_cmd_files[key] = SerialCmds.from_dict(maybe_file, extra_fields=extra_fields)
+                self.serial_cmd_file[key] = SerialCmds.add_df_from_dict(maybe_file, extra_fields=extra_fields)
 
-    def _extract_serial_cmd_file_kw_from_config(self):
+    def _extract_serial_cmd_file_kw_from_config(self, kw):
         """
         extract signature of SerialCmds and recursively search `self._config` for matching
         keys ad return all found key value pairs.
@@ -535,46 +517,18 @@ class CannedQueries(BaseCommandReaders):
         kwargs = OrderedDict()
         serial_cmd_args = inspection_getargspec(SerialCmds.__init__).args
         for arg in serial_cmd_args:
-            if self._config.get(arg) is not None:
-                kwargs[arg] = self._config[arg]
-            if self._config.get("canned_queries", {}).get(arg) is not None:
-                kwargs[arg] = self._config["canned_queries"][arg]
+            if kw.get(arg) is not None:
+                kwargs[arg] = kw[arg]
+            if kw.get("canned_queries", {}).get(arg) is not None:
+                kwargs[arg] = kw["canned_queries"][arg]
         logger.debug("%s extracted SerialCmds kwargs: %s", self, kwargs)
         return kwargs
 
     def _seed_serial_dfs(self):
-        if self.serial_cmd_files:
-            self.serial_dfs = OrderedDict(
-                (key, serial_cmd_file.data) for key, serial_cmd_file in self.serial_cmd_files.items()
-            )
-        else:
-            self.serial_dfs[DefaultDF] = pd.DataFrame(columns=["cmd", "response"])
+        if self.serial_cmd_file.data:
+            self.serial_df = pd.concat(objs=[df for df in self.serial_cmd_file.data])
 
-    def _get_matching_df(self, cmd):
-        """
-        Get matching DataFrame from cmd by regex search.
-
-        Each DataFrame in `self.serial_df` has a key that is a regex corresponding to what commands
-        they map to. If that matches, return that DataFrame.
-
-        Args:
-            cmd (AnyStr): Command to compare against.
-
-        Returns:
-            Tuple[pd.DataFrame, SerialCmds]: Returns matching DataFrame,
-                otherwise it returns default values.
-
-        Raises:
-            KeyError if cmd is never found is not found in DataFrames in no DefaultDF is defined.
-        """
-        for key, df in self.serial_dfs.items():
-            not_default_df = key != DefaultDF
-            if not_default_df and re.match(key, cmd):
-                return df, self.serial_cmd_files[key]
-        return self.serial_dfs[DefaultDF], self.serial_cmd_files[DefaultDF]
-
-    @staticmethod
-    def _filter_serial_df(df, cmd):
+    def _filter_serial_df(self, cmd):
         """
         Filter DataFrame to only the commands that match the inputted command
 
@@ -588,13 +542,14 @@ class CannedQueries(BaseCommandReaders):
         Returns:
             pd.DataFrame: Filtered DataFrame.
         """
+        df = self.serial_df
         conditions = df["cmd"] == cmd
         columns = ["response"]
         serial_df = df.loc[conditions, columns]
         return serial_df
 
     @staticmethod
-    def _get_generator_from_df(df, serial_cmd_file):
+    def _get_generator_from_df(df, will_randomize_responses):
         """Create a generator for the df so that when you call next on that generator, it
         gives you the next serial command each time, and not the first one. Allowing you to
         continue through the list of serial commands. Also gives the option to randomize results.
@@ -605,16 +560,16 @@ class CannedQueries(BaseCommandReaders):
                 a straight iteration.
         """
         # TODO(madeline) only pass in randomize enum? Also clean up and make subfunctions?
-        if serial_cmd_file.will_randomize_responses == RandomizeResponse.not_randomized:
+        if will_randomize_responses == RandomizeResponse.not_randomized.name:
             for _, rows in df.iterrows():
                 yield rows["response"]
         if (
-            serial_cmd_file.will_randomize_responses == RandomizeResponse.randomized
-            or serial_cmd_file.will_randomize_responses == RandomizeResponse.randomized_and_remove
+            will_randomize_responses == RandomizeResponse.randomized_w_replacement.name
+            or will_randomize_responses == RandomizeResponse.randomize_and_remove.name
         ):
             while df.shape[0] > 0:
                 df_length = df.shape[0]
                 row = random.randint(0, df_length - 1)
                 yield df["response"].iloc[row]
-                if serial_cmd_file.will_randomize_responses == RandomizeResponse.randomized_and_remove:
+                if will_randomize_responses == RandomizeResponse.randomize_and_remove.name:
                     df = df.drop(row)

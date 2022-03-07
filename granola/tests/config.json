@@ -55,11 +55,22 @@
                     }
                 ]
             },
-            "CannedQueries": { "data": {
-                "`DEFAULT`": "data/cereal_cmds.csv",
-                "sdicmd 1 get-measurement": "data\\sensor_get_reading_cmds.csv",
-                "sdicmd 1": "data\\sensor_cmds.csv"
-                }}
+            "CannedQueries": { "data": [
+                "data/cereal_cmds.csv",
+                "data\\sensor_get_reading_cmds.csv",
+                "data\\sensor_cmds.csv",
+                {
+                    "1\r": "1",
+                    "2\r": {"response": "2"},
+                    "3\r": {"response": "3", "delay": 3},
+                    "4\r": {"response": ["4a", "4b"]},
+                    "5\r": {"response": ["5a", "5b"], "delay": 5},
+                    "6\r": {"response": ["6a", "6b"], "delay": [6.1, 6.2]},
+                    "7\r": {"response": [["7a", {"delay": 7}], "7b"]},
+                    "8\r": {"response": [["8a", {"delay": 8.1}], "8b"], "delay": 8},
+                    "9\r": [["9a", {"delay": 9}], "9b"]
+                }
+            ]}
         }
     },
 
@@ -94,7 +105,7 @@
 
     "incorrect_getter": {
         "command_readers":{
-            "CannedQueries": {"data": {"`DEFAULT`": "data/cereal_cmds.csv"}},
+            "CannedQueries": {"data": [{"1\r": "1", "2\r": {"response": "3", "delay": 3}}]},
             "GettersAndSetters": {
                 "default_values": {
                     "sn": "42"
@@ -111,7 +122,7 @@
 
     "incorrect_setter": {
         "command_readers":{
-            "CannedQueries": {"data": {"`DEFAULT`": "data/cereal_cmds.csv"}},
+            "CannedQueries": {"data": [{"1\r": "1", "2\r": {"response": "3", "delay": 3}}]},
             "GettersAndSetters": {
                 "default_values": {
                     "sn": "42"
@@ -128,18 +139,11 @@
 
     "stick_hook": {
         "command_readers":{
-            "CannedQueries": {
-                "data": {
-                    "`DEFAULT`": "data/cereal_cmds.csv",
-                    "sdicmd 1 get-measurement": "data\\sensor_get_reading_cmds.csv",
-                    "sdicmd 1": "data\\sensor_cmds.csv"
-                }
-            }
+            "CannedQueries": {"data": [{"1\r": "1", "2\r": {"response": "3", "delay": 3}}]}
         },
         "hooks": {
             "StickCannedQueries": {
-                "hook_type": "",
-                "attributes": ["get -volt\r"],
+                "attributes": ["2\r"],
                 "include_or_exclude": "exclude"
             }
         }
@@ -147,24 +151,19 @@
 
     "command_readers": {
         "command_readers": {
-            "CannedQueries": {
-                "data": {
-                    "`DEFAULT`": "data/cereal_cmds.csv",
-                    "sdicmd 1 get-measurement": "data\\sensor_get_reading_cmds.csv",
-                    "sdicmd 1": "data\\sensor_cmds.csv"
-                }
-            }
+            "CannedQueries": {"data": ["data/cereal_cmds.csv"]}
         }
     },
 
     "dictionary": {
         "command_readers":{
             "CannedQueries": {
-                "data": {
-                    "`DEFAULT`": {"get -temp\r": {"response": ["20\r>",
-                                                            "22\r>"]},
-                                "get -sn\r": "sn1234\r>",
-                                "test -off\r": {"response": "OK\r>"}}}
+                "data": [
+                    {"get -temp\r": {"response": ["20\r>",
+                                                  "22\r>"]},
+                     "get -sn\r": "sn1234\r>",
+                     "test -off\r": {"response": "OK\r>"}}
+                ]
             }
         }
     },

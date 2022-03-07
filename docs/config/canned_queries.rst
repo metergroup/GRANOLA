@@ -2,8 +2,12 @@
 Canned Queries Configuration
 =================================
 
+.. todo::
+
+    update with this to not use ```DEFAULT```
+
 To use the :mod:`Command Reader <granola.command_readers>` :class:`~granola.command_readers.CannedQueries`,
-CannedQueries"`` as a dictionary in your configuration.
+you must define ``"canned_queries"`` as a dictionary in your configuration.
 Which involves having a ``"data"`` dictionary with either file paths listed or serial commands directly defined.
 
 File Path Option
@@ -15,11 +19,11 @@ To define your serial commands with file paths
 
     {
         "CannedQueries": {
-            "data": {
-                "`DEFAULT`": "data\\fixture\\fixture_serial_cmds.csv",
-                "sdicmd 1 \\?Xc!": "data\\sensor\\teros_12_get_reading_cmds.csv",
-                "sdicmd 1": "data\\sensor\\teros_12_serial_cmds.csv"
-            }
+            "data": [
+                "data\\fixture\\fixture_serial_cmds.csv",
+                "data\\sensor\\teros_12_get_reading_cmds.csv",
+                "data\\sensor\\teros_12_serial_cmds.csv"
+            ]
         }
     }
 

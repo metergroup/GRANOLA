@@ -3,7 +3,7 @@
     "encoding": "ascii",
     "command_readers":{
       "CannedQueries": {
-        "data": {"`DEFAULT`": "granola\\tests\\data\\cereal_cmds.csv"}},
+        "data": ["granola\\tests\\data\\cereal_cmds.csv"]},
       "GettersAndSetters": {
           "default_values": {
               "my_value": "You got it"
