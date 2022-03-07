@@ -1,6 +1,5 @@
 import functools
 import os
-import warnings
 
 import pytest
 
@@ -52,10 +51,10 @@ def check_deprecation(*msgs):
 
         @functools.wraps(func)
         def _inner(*args, **kwargs):
-            with warnings.catch_warnings(record=True) as w:
+            with pytest.deprecated_call() as dep:
                 r = func(*args, **kwargs)
-                assert issubclass(w[-1].category, Warning)
-                assert msg in str(w[-1].message).lower()
+                assert issubclass(dep.list[-1].category, Warning)
+                assert msg in str(dep.list[-1].message).lower()
             return r
 
         return _inner
