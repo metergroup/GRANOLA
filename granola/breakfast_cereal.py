@@ -12,7 +12,6 @@ from granola.hooks.base_hook import (
     _run_post_reading_hooks,
     _run_pre_reading_hooks,
 )
-from granola.hooks.hooks import LoopCannedQueries
 from granola.utils import (
     IS_PYTHON3,
     SENTINEL,
@@ -20,7 +19,6 @@ from granola.utils import (
     add_created_at,
     check_min_package_version,
     decode_bytes,
-    deprecation,
     deunicodify_hook,
     encode_to_bytes,
     fixpath,
@@ -41,11 +39,16 @@ class Cereal(Serial):
     r"""
     Mock pyserial Serial class that takes CSVs of serial commands to use for mocking.
     Serial commands are routed to various CSVs based on which command is passed in.
-    A serial command is checked against a dictionary of ``SerialCmds``s for if that serial command
+
+    .. todo::
+
+        change what is below on update to not user ```DEFAULT```
+
+    A serial command is checked against a dictionary of ``SerialCmds`` for if that serial command
     is a regex match to the keys in that dictionary. If it is, then it uses that CSV, if it doesn't,
     it uses the a default serial command file under the key ```DEFAULT```.
 
-    Mock serials initialization follows a 2 step process. The first is with the normal `__init__`
+    Mock serials initialization follows a 2 step process. The first is with the normal ``__init__``
     method where you pass arguments to Cereal, you can do this before your project is going,
     as part of the setup. At this point, Cereal will be able to mock but it won't have many
     pyserial Serial attributes defined such as port, baudrate. Cereal is
@@ -57,55 +60,62 @@ class Cereal(Serial):
     The CSVs must have the columns cmd and response in them, it can have other columns as well.
 
     Args:
-        config_key = (str) Which instrument in the config json to pull out for this particular mock
-            serial.
+        config (dict): Configuration dictionary. See Config guide :ref:`Configuration Overview` for
+            options and format.
 
-        config_path: (str) Path to configuration json file. You can define multiple instruments in
+        config_path (str): Path to configuration json file. You can define multiple instruments in
             this json file. Which instrument is used for this mock serial will be the one that
             is passed in config_key.
 
-            If you don't specify a config_path, it will default to config.json in the root directory
-            of your python path.
+            If you don't specify a config_path, it will default to config.json in the current
+            working directory.
 
-            The key "canned_queries" (optional) is a dictionary of csv files of serial
-            cmd and responses. inside "canned_queries", and then put
-            another dictionary with all the files where the keys are regexes to map incoming
-            serial commands to the CSVs and the values are paths to those CSVs. The CSV path with
-            the key "`DEFAULT`" will be the default csv looked in if a serial command comes in
-            and doesn't match any regex.
+        command_readers (Iterable[BaseCommandReaders]): Iterable of initialized
+            :mod:`Command Readers <granola.command_readers>`. You can also pass the options in through
+            the config dictionary. Including custom Command Readers. See :ref:`Command Readers and Hooks Configuration`.
+            defaults to ``(GettersAndSetters(), CannedQueries())``
 
-            The key "unsupported_response" (optional, defaults to Unsupported\r>) defines the
-            response when passed into the mock serial device that is not defined.
+        hooks (Iterable[BaseHook]): Iterable of
+            :mod:`Hooks <granola.hooks.hooks>`. If they are passed in not initalized, it will initialize them
+            with the default values. You can also pass the options in through
+            the config dictionary. Including custom Hooks. See :ref:`Hooks Configuration`.
+            If no command readers are passed in and no hooks, defaults to ``LoopCannedQueries()``,
+            else it defaults to an empty list.
 
-            The key "encoding" (optional, defaults to ascii), defines what encoding and decoding
-            to use.
+        config_key (str): Which instrument in the config json to pull out for this particular mock
+            serial.
 
-            The key "getters_and_setters" (optional) defines the getters and setters. See `GettersAndSetters`
-            for more information on formatting for those keys. Also examples are given in the
-            config.json
+            .. deprecated:: 0.9
+                Use alternative constructor :meth:`mock_from_json` instead.
+
+    See Also
+    --------
+    Cereal.mock_from_json: Constructor from external configuration file.
     """
 
     @add_created_at
-    def __init__(self, config=None, config_path=None, command_readers=None, hooks=None, config_key=None):
-
+    def __init__(
+        self,
+        command_readers=None,
+        hooks=None,
+        config_path=None,
+        unsupported_response="Unsupported\r>",
+        encoding="ascii",
+    ):
         self._config_path = config_path if config_path is not None else os.path.join(os.getcwd(), "config.json")
-
-        config = self._check_and_normalize_config_deprecation(config, config_key)
-
         hooks = hooks if hooks is not None else []
-        if command_readers is None:  # Set default command readers and hooks
-            command_readers = (GettersAndSetters(), CannedQueries())
-            if not hooks:
-                hooks.append(LoopCannedQueries())
+        command_readers = command_readers if command_readers is not None else []
 
-        self._config = config
-        self._unsupported_response = self._config.get("unsupported_response", "Unsupported\r>")
-        self._encoding = self._config.get("encoding", "ascii")
+        # config = self._check_and_normalize_config_deprecation(config, config_key)
+
+        # self._config = config
+        self._unsupported_response = unsupported_response
+        self._encoding = encoding
         self._write_terminator = "\r"  # TODO madeline, make this something to pass in from config.
 
-        self._readers = self._setup_command_readers(command_readers, hooks)
+        self._readers_ = self._setup_command_readers(command_readers, hooks)
 
-        self._hooks = []
+        self._hooks_ = []
         self._next_read = ""  # The next read for this "serial" device
         self._next_write = ""  # The current write buffer to the serial device
 
@@ -115,9 +125,10 @@ class Cereal(Serial):
             self._isOpen = True
 
     @classmethod
-    def mock_from_file(cls, config_key, config_path="config.json", *args, **kwargs):
+    def mock_from_json(cls, config_key, config_path="config.json", *args, **kwargs):
         config = cls._load_config(config_key=config_key, config_path=config_path)
-        return cls(config=config, config_path=config_path, *args, **kwargs)
+        kwargs.update(config)
+        return cls(config_path=config_path, *args, **kwargs)
 
     @classmethod
     def _load_config(cls, config_key, config_path):
@@ -197,7 +208,7 @@ class Cereal(Serial):
                 next_read = None
                 _run_pre_reading_hooks(hooked=self, data=self._next_write)
 
-                for reader in self._readers.values():
+                for reader in self._readers_.values():
                     next_read = reader.get_reading(data=self._next_write)
                     if next_read is not None:
                         self._next_read = next_read
@@ -307,87 +318,71 @@ class Cereal(Serial):
             raise PortNotOpenError
 
     def _setup_command_readers(self, command_readers, hooks):
-        config_hooks = self._read_file_config_hooks()
+        readers = OrderedDict()
+        config_command_readers = self._read_file_config_command_readers(command_readers)
+        if config_command_readers:
+            for reader in config_command_readers:
+                readers[reader.__class__.__name__] = reader
+        else:
+            # deprecation("")
+            # if not command_readers:
+            command_readers = (GettersAndSetters, CannedQueries)
+            for reader in command_readers:
+                cr = reader()
+                readers[cr.__class__.__name__] = cr
+
+        config_hooks = self._read_file_config_hooks(hooks)
         if config_hooks:
             hooks = config_hooks
-        config_command_readers = self._read_file_config_command_readers()
-        if config_command_readers:
-            command_readers = config_command_readers
-
-        readers = OrderedDict()
-        for reader in command_readers:
-            reader.initialize_config(self._config, self._config_path)
-
-            readers[reader.__class__.__name__] = reader
-
         for hook in hooks:
             if inspect.isclass(hook):  # initialize uninitialized hook to their default args
                 hook = hook()
             for cls in hook.hooked_classes:
-                readers[cls.__name__]._hooks.append(hook)
+                readers[cls.__name__].register_hook(hook)
+
+        for reader in readers.values():
+            reader.assign_default_hook()
 
         return readers
 
-    def _read_file_config_from_classes(key, subkey, baseclass):
+    def _read_file_config_from_classes(baseclass):
         """
-        closure to generate functions that will grab ``key`` from config and then ``subkey`` is used
-        to match to a subclass of ``baseclass``. This allows users to pass in classes they want to use
-        for things like hooks or other things inside a configuration dictionary (JSON).
+        closure to generate functions that will match passed in configuration option classes
+        to a subclass of ``baseclass``. This allows users to pass in classes they want to use
+        for things like Hooks, CommandReaders or other things inside a configuration dictionary (JSON).
 
         Args:
-            key (str): The outer key to look up in the config dictionary
-            subkey (str): The inner key to look up in the config dictionary to find the class name
-            baseclass (class): Class to check all subclasses of when you know the class name from
-                ``subkey``
+            baseclass (class): Class to check all subclasses of when you know class from config_options
         """
 
-        def _inner(self):
-            config_options = self._config.get(key, [])
+        def _inner(self, config_options):
             subclasses = _get_subclasses(baseclass)
             classes = []
-            for cls in config_options:
-                if isinstance(cls, dict):
-                    c = subclasses[cls.pop(subkey)]
-                    c = c(**cls)
-                else:
-                    c = subclasses[cls]()
-                classes.append(c)
+            if isinstance(config_options, list):
+                for cls in config_options:
+                    if isinstance(cls, str):
+                        c = subclasses[cls]()
+                    elif inspect.isclass(cls):
+                        c = cls()
+                    else:
+                        c = cls
+                    classes.append(c)
+            else:
+                for cls, options in config_options.items():
+                    # add config path, but will be overwritten if defined in options
+                    opts = {"config_path": self._config_path}
+                    opts.update(options)
+                    if isinstance(cls, str):
+                        c = subclasses[cls](**opts)
+                    elif inspect.isclass(cls):
+                        c = cls(**opts)
+                    else:
+                        c = cls
+                    classes.append(c)
             return classes
 
         return _inner
 
-    _read_file_config_hooks = _read_file_config_from_classes("hooks", "hook_type", BaseHook)
+    _read_file_config_hooks = _read_file_config_from_classes(BaseHook)
 
-    _read_file_config_command_readers = _read_file_config_from_classes(
-        "command_readers", "reader_type", BaseCommandReaders
-    )
-
-    def _check_and_normalize_config_deprecation(self, config, config_key):
-        if isinstance(config, str):
-            config_key = config
-        if config_key is not None:
-            deprecation(
-                "Instantiating Cereal with `config_path` and `config_key` is deprecated"
-                " and will be removed in a future release."
-                "\nPlease use `Cereal.mock_from_file(config_key, config_path)` instead"
-            )
-            config = self._load_config(config_key=config_key, config_path=self._config_path)
-
-            # Check for old form of variable substitution pre jinja
-            getters_and_setters = config.get("getters_and_setters", {})
-            start_not_in = "variable_start_string" not in getters_and_setters
-            end_not_in = "variable_end_string" not in getters_and_setters
-            if getters_and_setters and start_not_in and end_not_in:
-                deprecation(
-                    "'getters_and_setters' variable declaration follows old format"
-                    " that will be removed in a future release."
-                    "\nEither switch to traditional jinja2 formatting ({{ var }})"
-                    "\nor specify explicitly your variable_start_string and variable_end_string inside"
-                    " getters and setters (ex: 'variable_start_string': '`')"
-                )
-                getters_and_setters["variable_start_string"] = "`"
-                getters_and_setters["variable_end_string"] = "`"
-
-        if config is None:
-            raise AttributeError("Cereal __init__ requires a config dictionary")
-        return config
+    _read_file_config_command_readers = _read_file_config_from_classes(BaseCommandReaders)

@@ -1,0 +1,64 @@
+{
+    "deprecated": {
+        "unsupported_response": "ERROR\r>",
+        "canned_queries": { "files": {
+            "_default_csv_": "data/cereal_cmds.csv",
+            "sdicmd 1 get-measurement": "data\\sensor_get_reading_cmds.csv",
+            "sdicmd 1": "data\\sensor_cmds.csv"
+            }},
+        "getters_and_setters": {
+            "default_values": {
+                "devtype": "Cereal",
+                "sn": "42",
+                "fw_ver":"0.0.0",
+                "temp": "20.0",
+                "volts": "2000.0"
+            },
+            "getters": [
+                {
+                    "getter": "get -sn\r",
+                    "response": "`sn`\r>"
+                },
+                {
+                    "getter": "get ver\r",
+                    "response": "`fw_ver`\r>"
+                },
+                {
+                    "getter": "show\r",
+                    "response": "`devtype` `fw_ver` `sn`\r>"
+                },
+                {
+                    "getter": "get -temp\r",
+                    "response": "`temp`\r>"
+                },
+                {
+                    "getter": "get -tempf\r",
+                    "response": "`temp|float * (9/5) + 32`\r>"
+                },
+                {
+                    "getter": "get volt_temp\r",
+                    "response": "`(temp|float + volts|float) / 2`"
+                }
+            ],
+            "setters": [
+                {
+                    "setter": "set -sn `sn`\r",
+                    "response": "OK\r>"
+                },
+                {
+                    "setter": "set -some dummy command `sn` `fw_ver`\r",
+                    "response": "OK\r>"
+                },
+                {
+                    "setter": "set -temp `temp`\r",
+                    "response": "`temp`"
+                },
+                {
+                    "setter": "set volt `volts`\r",
+                    "response": "Volt Calculation `volts|float / 2`"
+                }
+            ]
+        }
+
+    }
+}

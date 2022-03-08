@@ -96,12 +96,12 @@ def register_hook(hook_type_enum, hooked_classes):  # TODO madeline allow passin
 
 
 def _run_pre_reading_hooks(hooked, data, **kwargs):
-    for hook in hooked._hooks:
+    for hook in hooked._hooks_:
         hook.pre_reading(hooked=hooked, data=data, **kwargs)
 
 
 def _run_post_reading_hooks(hooked, result, data, **kwargs):
-    for hook in hooked._hooks:
+    for hook in hooked._hooks_:
         result = hook.post_reading(hooked=hooked, result=result, data=data, **kwargs)
     return result
 

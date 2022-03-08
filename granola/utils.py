@@ -172,6 +172,8 @@ def _get_subclasses(cls):
     return {subclass.__name__: subclass for subclass in cls.__subclasses__()}
 
 
-def deprecation(message):
+def deprecation(message, version_to_remove=None):
     warnings.simplefilter("always", DeprecationWarning)
+    if version_to_remove:
+        message += "\nScheduled to be removed on version {version}".format(version=version_to_remove)
     warnings.warn(message, DeprecationWarning)

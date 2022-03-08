@@ -14,6 +14,7 @@ else:
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 CONFIG_PATH = os.path.join(current_dir, "config.json")
+CONFIG_PATH_DEPRECATIONS = os.path.join(current_dir, "config_deprecations.json")
 
 
 def assert_filled_all(mask):
@@ -54,11 +55,11 @@ def check_deprecation(*msgs):
         def _check_deprecation(func):
             @functools.wraps(func)
             def _inner(*args, **kwargs):
-                with warnings.catch_warnings(record=True) as w:
+                with pytest.deprecated_call() as dep:
                     r = func(*args, **kwargs)
                     found_warning = False
                     for msg in msgs:
-                        for warning in w:
+                        for warning in dep.list:
                             if issubclass(warning.category, Warning) and msg.lower() in str(warning.message).lower():
                                 found_warning = True
                                 break
@@ -76,12 +77,12 @@ class SerialSnifferTester(SerialSniffer):
 
 @pytest.fixture
 def mock_cereal():
-    return Cereal.mock_from_file("cereal", config_path=CONFIG_PATH)()
+    return Cereal.mock_from_json("cereal", config_path=CONFIG_PATH)()
 
 
 @pytest.fixture
 def bk_cereal_only_getters_and_setters():
-    return Cereal.mock_from_file("just_getters_and_setters", config_path=CONFIG_PATH)()
+    return Cereal.mock_from_json("just_getters_and_setters", config_path=CONFIG_PATH)()
 
 
 @pytest.fixture
@@ -104,9 +105,9 @@ def mock_read():
 
 
 @pytest.fixture
-def canned_queries_config():
-    canned_queries = {
-        "canned_queries": {
+def canned_queries_command_readers():
+    command_readers = {
+        "CannedQueries": {
             "data": {
                 "`DEFAULT`": {
                     "1\r": "1",
@@ -123,4 +124,4 @@ def canned_queries_config():
             "delay": 0,
         }
     }
-    return canned_queries
+    return command_readers
