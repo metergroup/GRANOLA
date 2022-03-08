@@ -247,7 +247,7 @@ def test_that_you_can_pass_in_a_custom_command_reader_through_the_config_dict_as
             if "2" in data:
                 return "Command Reader2"
 
-    # and a config dictionary that reference the command readers by name and by the actual object
+    # and a config dictionary that references the command readers by name and by the actual object
     command_readers = ["CommandReader1", CommandReader2]
 
     # When we initialize it and issue our serial command
