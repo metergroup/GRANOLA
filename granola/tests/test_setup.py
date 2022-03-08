@@ -120,9 +120,9 @@ def test_that_a_python_dictionary_config_is_just_as_good_as_json():
     command_readers = [CannedQueries]
     command_readers = {
         CannedQueries: {
-            "data": {
-                "`DEFAULT`": Path(__file__).resolve().parent / "data/cereal_cmds.csv",
-            }
+            "data": [
+                Path(__file__).resolve().parent / "data/cereal_cmds.csv",
+            ]
         }
     }
 
@@ -164,34 +164,40 @@ def test_that_a_python_dictionary_config_lets_you_use_getters_and_setters():
 
 def test_a_json_config_can_specify_a_hook___stick_hook_specifically():
     # Given a mock serial with a json config that specifies a stick hook
+    # defined to stick on the cmd 1\r
     bk_cereal = Cereal.mock_from_json("stick_hook", config_path=CONFIG_PATH)
 
     # When we query it enough to ensure it has exhausted the generator
     for _ in range(50):
-        bk_cereal.write(b"scan adc30 3\r")
+        bk_cereal.write(b"1\r")
         bk_cereal.read(100)
 
     responses = set()
     # Then all future queries should be the same
     for _ in range(10):
-        bk_cereal.write(b"scan adc30 3\r")
+        bk_cereal.write(b"1\r")
         responses.add(bk_cereal.read(100))
 
         assert len(responses) == 1
+        # and we get back the expected response
+        assert b"1" in responses
 
 
 def test_a_json_config_can_specify_a_hook_arguments_to_exclude_a_query___stick_hook_specifically(caplog):
-    # Given a mock serial with a json config that specifies a stick hook, but to exclude get -volt
+    # Given a mock serial with a json config that specifies a stick hook, but to exclude 2\r
     bk_cereal = Cereal.mock_from_json("stick_hook", config_path=CONFIG_PATH)
 
     # When we query a our excluded response past the generator
+    responses = []
     for _ in range(10):
         with caplog.at_level(logging.WARNING):
-            bk_cereal.write(b"get -volt\r")
-            bk_cereal.read(100)
+            bk_cereal.write(b"2\r")
+            responses.append(bk_cereal.read(100))
 
-    # Then we capture in our log that there was an unhandled response from the hooks
+    # Then we capture in our log that there was an unhandled response from the hook
     assert "unhandled response return from hooks" in caplog.text
+    # and we get back the responses as an Unsupported\r> response
+    assert responses[-1] == b"Unsupported\r>"
 
 
 def test_a_json_config_can_specify_command_readers_as_well():

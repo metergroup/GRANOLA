@@ -32,7 +32,10 @@ def test_mock_serial_deprecation():
         assert new_sn + "\r>" == decoded_sn
 
 
-@check_deprecation("canned_queries['data'] key '_default_csv_' has been deprecated")
+@check_deprecation(
+    "canned_queries['data'] as a dictionary has been deprecated."
+    "\nEither use a list of files or list of dictionaries of cmds and responses instead"
+)
 def test_default_df_key_deprecation():
     # Given a mock serial with deprecated "files" and "_default_csv_" keys
     mock = MockSerial("deprecated", CONFIG_PATH_DEPRECATIONS)

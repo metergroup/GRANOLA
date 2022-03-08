@@ -49,6 +49,17 @@ class DocumentedEnum(Enum):
         return string
 
 
+class RandomizeResponse(DocumentedEnum):
+    """
+    The different ways to specify to randomize or not randomize your
+    :class:`~granola.command_readers.CannedQueries` response
+    """
+
+    not_randomized = "Don't randomize the response"
+    randomized_w_replacement = "Randomize with replacement"
+    randomize_and_remove = "Randomize and remove"
+
+
 class HookTypes(DocumentedEnum):
     """
     Allowed hook types for ``BaseHook`` methods or for a ``register_hook``

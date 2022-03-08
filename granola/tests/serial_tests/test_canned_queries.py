@@ -42,3 +42,17 @@ def test_multipart_writes_with_canned_queries_only_fire_on_carriage_return(mock_
 
     # Then the correct result,and only the correct result is returned
     assert mock_cereal.read(1000) == output
+
+
+def test_that_you_can_use_both_files_and_dictionary_of_cmds_and_response_in_same_config(mock_cereal):
+    # Given a mock cerial device that has canned queries defined a both paths to csvs and dictionaries
+    # of cmds and responses
+
+    # When we query from a command from one of the files
+    ok = query_device(mock_cereal, "reset")
+    # one we query from a command from the dictionary of cmds
+    one = query_device(mock_cereal, "1")
+
+    # Then they both return the correct response
+    assert ok == b"OK\r>"
+    assert one == b"1"

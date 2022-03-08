@@ -3,7 +3,6 @@ from granola.breakfast_cereal import Cereal, PortNotOpenError
 from granola.command_readers import (
     BaseCommandReaders,
     CannedQueries,
-    DefaultDF,
     GettersAndSetters,
     RandomizeResponse,
     SerialCmds,
@@ -30,7 +29,6 @@ __all__ = [
     "SerialCmds",
     "Cereal",
     "MockSerial",  # deprecated
-    "DefaultDF",
     "PortNotOpenError",
     "GettersAndSetters",
     "CannedQueries",

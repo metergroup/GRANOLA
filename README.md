@@ -28,12 +28,7 @@ TODO (madeline) fill in with link to readthedocs later
 ``` python
 >>> from granola import Cereal
 
->>> config = {
-...     "canned_queries": {
-...         "data": {
-...             "`DEFAULT`": {"1\r": "1",
-...                           "2\r": ["2a", "2b"]}
-...         }}}
+>>> config = {"command_readers":{"CannedQueries": {"data": [{"1\r": "1", "2\r": ["2a", "2b"]}]}}}
 ... mock_cereal = Cereal(config)
 
 >>> mock_cereal.write(b"2\r")

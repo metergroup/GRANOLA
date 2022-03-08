@@ -44,9 +44,7 @@ class Cereal(Serial):
 
         change what is below on update to not user ```DEFAULT```
 
-    A serial command is checked against a dictionary of ``SerialCmds`` for if that serial command
-    is a regex match to the keys in that dictionary. If it is, then it uses that CSV, if it doesn't,
-    it uses the a default serial command file under the key ```DEFAULT```.
+        and update args
 
     Mock serials initialization follows a 2 step process. The first is with the normal ``__init__``
     method where you pass arguments to Cereal, you can do this before your project is going,
@@ -324,8 +322,6 @@ class Cereal(Serial):
             for reader in config_command_readers:
                 readers[reader.__class__.__name__] = reader
         else:
-            # deprecation("")
-            # if not command_readers:
             command_readers = (GettersAndSetters, CannedQueries)
             for reader in command_readers:
                 cr = reader()
@@ -362,7 +358,7 @@ class Cereal(Serial):
                 for cls in config_options:
                     if isinstance(cls, str):
                         c = subclasses[cls]()
-                    elif inspect.isclass(cls):
+                    elif inspect.isclass(cls):  # initialize uninitialized class
                         c = cls()
                     else:
                         c = cls
@@ -374,7 +370,7 @@ class Cereal(Serial):
                     opts.update(options)
                     if isinstance(cls, str):
                         c = subclasses[cls](**opts)
-                    elif inspect.isclass(cls):
+                    elif inspect.isclass(cls):  # initialize uninitialized class
                         c = cls(**opts)
                     else:
                         c = cls
