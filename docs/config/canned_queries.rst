@@ -3,7 +3,7 @@ Canned Queries Configuration
 =================================
 
 To use the :mod:`Command Reader <granola.command_readers>` :class:`~granola.command_readers.CannedQueries`,
-you must define ``"canned_queries"`` as a dictionary in your configuration.
+CannedQueries"`` as a dictionary in your configuration.
 Which involves having a ``"data"`` dictionary with either file paths listed or serial commands directly defined.
 
 File Path Option
@@ -14,7 +14,7 @@ To define your serial commands with file paths
 .. code-block:: JSON
 
     {
-        "canned_queries": {
+        "CannedQueries": {
             "data": {
                 "`DEFAULT`": "data\\fixture\\fixture_serial_cmds.csv",
                 "sdicmd 1 \\?Xc!": "data\\sensor\\teros_12_get_reading_cmds.csv",
@@ -39,7 +39,7 @@ To define your serial commands directly, here is a basic example
 .. code-block:: JSON
 
     {
-        "canned_queries": {
+        "CannedQueries": {
             "data": {
                 "`DEFAULT`": {"get -temp\r": {"response": ["20\r>",
                                                             "22\r>"]},
@@ -52,7 +52,7 @@ You can also additionally pass extra fields to to the resulting DataFrame, as su
 .. code-block:: JSON
 
     {
-        "canned_queries": {
+        "CannedQueries": {
             "data": {
                 "`DEFAULT`": {"get -temp\r": {"response": ["20\r>",
                                                             "22\r>"]},
@@ -74,7 +74,7 @@ This is a quick overview of all the options for inside the serial commands dicti
     :pyversion: >= 3.6
 
     >>> config = {
-    ...     "canned_queries": {
+    ...     "CannedQueries": {
     ...         "data": {
     ...             "`DEFAULT`": {"cmd1\r": "some response\r>",
     ...                         "cmd2\r": {"response": "some response\r"},
@@ -125,7 +125,7 @@ Generate a `SerialCmds` from a dictionary of serial commands. Here is the most b
     :pyversion: >= 3.6
 
     >>> config = {
-    ...     "canned_queries": {
+    ...     "CannedQueries": {
     ...         "data": {
     ...             "`DEFAULT`": {"test -off\r": "OK\r>",
     ...                         "get -sn\r": "1234|r>"}
@@ -148,7 +148,7 @@ Notice also that we also can map just a single response to ``test -off\r`` with 
     :pyversion: >= 3.6
 
     >>> config = {
-    ...     "canned_queries": {
+    ...     "CannedQueries": {
     ...         "data": {
     ...             "`DEFAULT`": {"get -temp\r": {"response": ["20\r>",
     ...                                                     "22\r>"]},
@@ -170,7 +170,7 @@ Here we look at how to pass additional columns to our constructed DataFrame
     :pyversion: >= 3.6
 
     >>> config = {
-    ...     "canned_queries": {
+    ...     "CannedQueries": {
     ...         "data": {
     ...             "`DEFAULT`": {"get -temp\r": {"response": ["20\r>",
     ...                                                     "22\r>"]},
@@ -204,7 +204,7 @@ Finally, we will look at 2 ways to specify extra fields on individual rows.
     :pyversion: >= 3.6
 
     >>> config = {
-    ...     "canned_queries": {
+    ...     "CannedQueries": {
     ...         "data": {
     ...             "`DEFAULT`": {"get -temp\r": {"response": ["20\r>",
     ...                                                     "22\r>"],
