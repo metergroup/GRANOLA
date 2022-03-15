@@ -16,14 +16,14 @@ class MockSerial(Cereal):
         deprecation("MockSerial is deprecated. Please use granola.breakfast_cereal.Cereal instead.", "1.0")
         command_readers = command_readers or []
         hooks = hooks or []
-        config = self._load_config(config_key=config_key, config_path=config_path)
+        config = self._load_json_config(config_key=config_key, config_path=config_path)
 
         config = self._check_and_normalize_config_deprecation(config)
 
         config = self._check_and_normalize_command_readers_deprecations(config, command_readers)
         config = self._check_and_normalize_hook_deprecations(config, hooks)
 
-        super(MockSerial, self).__init__(config_path=config_path, **config)
+        super(MockSerial, self).__init__(data_path_root=config_path, **config)
 
     def _check_and_normalize_config_deprecation(self, config):
         command_readers = config.setdefault("command_readers", {})

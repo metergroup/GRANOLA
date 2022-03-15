@@ -32,7 +32,7 @@ occur in order of top to bottom with the exception of ``"`DEFAULT`"``, which is
 the csv that any command that doesn't have a matching key will search in.
 
 Each file can also be defined either as a relative path to your configuration file (if you define your configuration
-directly in python, and don't include the a ``config_path`` input, it defaults to the current working directory
+directly in python, and don't include the a ``data_path_root`` input, it defaults to the current working directory
 for the relative base directory).
 
 Direct Serial Command Definitions

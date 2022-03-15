@@ -46,13 +46,13 @@ class SerialCmds(object):
     def add_dataframe(self, df):
         self.data.append(df)
 
-    def add_df_from_file(self, file, config_path=None, **kwargs):
+    def add_df_from_file(self, file, data_path_root=None, **kwargs):
         """
         Add a df to data from a csv file path
 
         Args:
             file (str): Path to csv file. Required
-            config_path (str): Path to configuration. Required if file path is not an absolute path
+            data_path_root (str): Path to configuration. Required if file path is not an absolute path
             extra_fields (dict): Dictionary of extra fields to add to DataFrame of commands. Either
                 key will be mapped to a new column in the DataFrame, and each value can either be
                 a single value, in which case it will be broadcast to all rows. Or a list of values
@@ -60,10 +60,10 @@ class SerialCmds(object):
         """
         file = str(file)
         if not os.path.isabs(file):
-            if config_path is None:
-                raise TypeError("`config_path` must be specified when using a relative file path")
-            config_path = str(config_path)
-            file = os.path.join(os.path.dirname(config_path), file)
+            if data_path_root is None:
+                raise TypeError("`data_path_root` must be specified when using a relative file path")
+            data_path_root = str(data_path_root)
+            file = os.path.join(os.path.dirname(data_path_root), file)
         file = fixpath(file)
         logger.debug("Canned query path %s: ", file)
         df = load_serial_df(file)
@@ -196,9 +196,9 @@ class BaseCommandReaders(ABC):
         post_hooks (list or tuple): iterable of hooks to run after `get_readings`
     """
 
-    def __init__(self, config_path=None, hooks=None, *args, **kwargs):
+    def __init__(self, data_path_root=None, hooks=None, *args, **kwargs):
         super(BaseCommandReaders, self).__init__()
-        self._config_path = config_path if config_path is not None else os.getcwd()
+        self._data_path_root = data_path_root if data_path_root is not None else os.getcwd()
         self._hooks_ = hooks if hooks is not None else []
 
     @wrap_in_hooks
@@ -265,16 +265,6 @@ class GettersAndSetters(BaseCommandReaders):
         self.getters = OrderedDict()
         self.setters = OrderedDict()
         self._load_getters_and_setters(default_values, getters, setters)
-
-    @classmethod
-    def _from_config(cls, config, **kwargs):
-        getters_and_setters = config.get("getters_and_setters", {})
-        default_values = getters_and_setters.get("default_values", {})
-        getters = getters_and_setters.get("getters", {})
-        setters = getters_and_setters.get("setters", {})
-        variable_start_string = getters_and_setters.get("variable_start_string", "{{")
-        variable_end_string = getters_and_setters.get("variable_end_string", "}}")
-        return cls(default_values, getters, setters, variable_start_string, variable_end_string, **kwargs)
 
     @wrap_in_hooks
     def get_reading(self, data):
@@ -434,9 +424,9 @@ class CannedQueries(BaseCommandReaders):
     See :ref:`Canned Queries Configuration` for examples on configuration formatting.
     """
 
-    def __init__(self, data=None, config_path=None, **kwargs):
+    def __init__(self, data=None, data_path_root=None, **kwargs):
 
-        super(CannedQueries, self).__init__(config_path=config_path, **kwargs)
+        super(CannedQueries, self).__init__(data_path_root=data_path_root, **kwargs)
         self.data = data if data is not None else OrderedDict()
         self.serial_df = pd.DataFrame(columns=["cmd", "response"])  # default empty df
         serial_cmd_files_kwargs = self._extract_serial_cmd_file_kw_from_config(kwargs)
@@ -445,19 +435,11 @@ class CannedQueries(BaseCommandReaders):
 
         for maybe_file in self.data:
             if isinstance(maybe_file, (str, Path)):
-                self.serial_cmd_file.add_df_from_file(maybe_file, config_path, **kwargs)
+                self.serial_cmd_file.add_df_from_file(maybe_file, self._data_path_root, **kwargs)
             elif isinstance(maybe_file, dict):
                 self.serial_cmd_file.add_df_from_dict(maybe_file, **kwargs)
 
         self._seed_serial_dfs()
-
-    @classmethod
-    def _from_config(cls, config, config_path=None, **kwargs):
-        canned_queries = config.get("canned_queries", {})
-
-        kwargs.update({key: item for key, item in canned_queries.items() if key != "data"})
-        data = canned_queries.get("data", {})
-        return cls(data, config_path, **kwargs)
 
     def assign_default_hook(self):
         if not self._hooks_:
@@ -489,20 +471,6 @@ class CannedQueries(BaseCommandReaders):
         if not serial_df.empty:
             serial_df_generator = self._get_generator_from_df(serial_df, self.serial_cmd_file.will_randomize_responses)
             self.serial_generator[cmd] = serial_df_generator
-
-    def _load_canned_queries(self, config_path):
-
-        canned_queries = self._config.get("canned_queries", {})
-
-        extra_fields = {key: item for key, item in canned_queries.items() if key != "data"}
-
-        for key, maybe_file in canned_queries.get("data", {}).items():
-            if isinstance(maybe_file, (str, Path)):
-                self.serial_cmd_file[key] = SerialCmds.add_df_from_file(
-                    maybe_file, config_path, extra_fields=extra_fields
-                )
-            elif isinstance(maybe_file, dict):
-                self.serial_cmd_file[key] = SerialCmds.add_df_from_dict(maybe_file, extra_fields=extra_fields)
 
     def _extract_serial_cmd_file_kw_from_config(self, kw):
         """

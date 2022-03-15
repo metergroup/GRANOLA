@@ -37,45 +37,59 @@ logger = logging.getLogger(__name__)
 
 class Cereal(Serial):
     r"""
-    Mock pyserial Serial class that takes CSVs of serial commands to use for mocking.
-    Serial commands are routed to various CSVs based on which command is passed in.
-
-    .. todo::
-
-        change what is below on update to not user ```DEFAULT```
-
-        and update args
+    Mock pyserial Serial class that is capable of mocking serial commands a responses to
+    for both simple and sophisticated neeeds. Breakfast Cereal allows you to defined
+    simple :class:`~granola.command_readersCannedQueries` that are are predefined
+    serial commands and responses for various commands. As well as more complicated
+    :class:`~granola.command_readers.GettersAndSetters` which allow on the fly changing
+    the state of stored attributes. It also allows customizing the behavior of how
+    individual or any set of commands are processed through :mod:`~granola.hooks.hooks`.
 
     Mock serials initialization follows a 2 step process. The first is with the normal ``__init__``
     method where you pass arguments to Cereal, you can do this before your project is going,
     as part of the setup. At this point, Cereal will be able to mock but it won't have many
     pyserial Serial attributes defined such as port, baudrate. Cereal is
     then able to be "initialized" a second time, following the signature of pyserial Serial class.
-    This allows you to setup Cereal with its configuration before and, and then not have to
-    change your code that initializes Pyserial much or at all. Ways to get Cereal in place of
-    Pyserial are depencency injection or monkey patching.
+    This allows you to setup Cereal with its configuration before and then not have to
+    change your code that initializes Pyserial much or at all through means of depencency injection
+    or patching.
 
     The CSVs must have the columns cmd and response in them, it can have other columns as well.
 
     Args:
-        command_readers (Iterable[BaseCommandReaders]): Iterable of initialized
-            :mod:`Command Readers <granola.command_readers>`. You can also pass the options in through
-            the config dictionary. Including custom Command Readers. See :ref:`Command Readers and Hooks Configuration`.
+        command_readers (dict[BaseCommandReaders|str] | list[BaseCommandReaders|str], optional):
+            Dictionary or list of :mod:`Command Readers <granola.command_readers>`. Command Readers
+            can be passed in as a string representation, or you may pass in the class itself.
+            Passing in a dictionary allows specifying your initialization options as well.
+            Using a list allows you to pass in already initialized Command Reader, or a not
+            initialized Command Reader that will be initialized to default values.
+            You can pass in custom Command Readers as well. See
+            :ref:`Command Readers and Hooks Configuration`.
             defaults to ``(GettersAndSetters(), CannedQueries())``
 
-        hooks (Iterable[BaseHook]): Iterable of
-            :mod:`Hooks <granola.hooks.hooks>`. If they are passed in not initalized, it will initialize them
-            with the default values. You can also pass the options in through
-            the config dictionary. Including custom Hooks. See :ref:`Hooks Configuration`.
-            If no command readers are passed in and no hooks, defaults to ``LoopCannedQueries()``,
-            else it defaults to an empty list.
+        hooks (dict[BaseHook|str] | list[BaseHook|str], optional):
+            Dictionary or list of :mod:`Hooks <granola.hooks.hook>`. Hooks
+            can be passed in as a string representation, or you may pass in the class itself.
+            Passing in a dictionary allows specifying your initialization options as well.
+            Using a list allows you to pass in already initialized Hook, or a not
+            initialized Hook that will be initialized to default values.
+            You can pass in custom Hooks as well. See
+            :ref:`Command Readers and Hooks Configuration`.
+            defaults to ``[]``
 
-        config_path (str): Path to configuration json file. You can define multiple instruments in
-            this json file. Which instrument is used for this mock serial will be the one that
-            is passed in config_key.
+        data_path_root (str, optional): Path to the where all data file paths (for
+            Command Readers or Custom Hooks) will be referenced from.
 
-            If you don't specify a config_path, it will default to config.json in the current
-            working directory.
+            .. todo::
+
+                probably just make this a thing inside the needed command readers
+
+        unsupported_response(str, optional):
+            The response returned for any command that does not have a defined response.
+            Defaults to "Unsupported\r>"
+
+        encoding(str, optional): The encoding scheme used to encode the serial commands and responses
+            Defaults to "ascii"
 
     See Also
     --------
@@ -87,17 +101,16 @@ class Cereal(Serial):
         self,
         command_readers=None,
         hooks=None,
-        config_path=None,
+        data_path_root=None,
         unsupported_response="Unsupported\r>",
         encoding="ascii",
     ):
-        self._config_path = config_path if config_path is not None else os.path.join(os.getcwd(), "config.json")
+        self._data_path_root = (
+            data_path_root if data_path_root is not None else os.path.join(os.getcwd(), "config.json")
+        )
         hooks = hooks if hooks is not None else []
         command_readers = command_readers if command_readers is not None else []
 
-        # config = self._check_and_normalize_config_deprecation(config, config_key)
-
-        # self._config = config
         self._unsupported_response = unsupported_response
         self._encoding = encoding
         self._write_terminator = "\r"  # TODO madeline, make this something to pass in from config.
@@ -115,20 +128,19 @@ class Cereal(Serial):
 
     @classmethod
     def mock_from_json(cls, config_key, config_path="config.json", *args, **kwargs):
-        config = cls._load_config(config_key=config_key, config_path=config_path)
-        kwargs.update(config)
-        return cls(config_path=config_path, *args, **kwargs)
-
-    @classmethod
-    def _load_config(cls, config_key, config_path):
         """
-        Load configuration dictionary based on self._config_key class variable
+        Load configuration dictionary based on config_key and config_path and return a
+        Breakfast Cereal class.
 
-        Loads CSV files into self.serial_cmd_files.
-
-        If you don't pass in where self._config_path is, it will default to "config.json" in the
+        If you don't pass in where config_path is, it will default to "config.json" in the
             root directory of your python path.
         """
+        config = cls._load_json_config(config_key=config_key, config_path=config_path)
+        kwargs.update(config)
+        return cls(data_path_root=config_path, *args, **kwargs)
+
+    @classmethod
+    def _load_json_config(cls, config_key, config_path="config.json"):
         path = get_path(config_path)
         config_path = fixpath(path)
 
@@ -357,7 +369,7 @@ class Cereal(Serial):
             else:
                 for cls, options in config_options.items():
                     # add config path, but will be overwritten if defined in options
-                    opts = {"config_path": self._config_path}
+                    opts = {"data_path_root": self._data_path_root}
                     opts.update(options)
                     if isinstance(cls, str):
                         c = subclasses[cls](**opts)
