@@ -1,1 +1,1 @@
--e .[test,dev,docs]
+-e .[test,dev,docs,examples]

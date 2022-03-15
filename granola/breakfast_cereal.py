@@ -58,16 +58,6 @@ class Cereal(Serial):
     The CSVs must have the columns cmd and response in them, it can have other columns as well.
 
     Args:
-        config (dict): Configuration dictionary. See Config guide :ref:`Configuration Overview` for
-            options and format.
-
-        config_path (str): Path to configuration json file. You can define multiple instruments in
-            this json file. Which instrument is used for this mock serial will be the one that
-            is passed in config_key.
-
-            If you don't specify a config_path, it will default to config.json in the current
-            working directory.
-
         command_readers (Iterable[BaseCommandReaders]): Iterable of initialized
             :mod:`Command Readers <granola.command_readers>`. You can also pass the options in through
             the config dictionary. Including custom Command Readers. See :ref:`Command Readers and Hooks Configuration`.
@@ -80,11 +70,12 @@ class Cereal(Serial):
             If no command readers are passed in and no hooks, defaults to ``LoopCannedQueries()``,
             else it defaults to an empty list.
 
-        config_key (str): Which instrument in the config json to pull out for this particular mock
-            serial.
+        config_path (str): Path to configuration json file. You can define multiple instruments in
+            this json file. Which instrument is used for this mock serial will be the one that
+            is passed in config_key.
 
-            .. deprecated:: 0.9
-                Use alternative constructor :meth:`mock_from_json` instead.
+            If you don't specify a config_path, it will default to config.json in the current
+            working directory.
 
     See Also
     --------
