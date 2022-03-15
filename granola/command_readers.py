@@ -12,6 +12,7 @@ import jinja2
 import jinja2.meta
 import pandas as pd
 
+import granola.hooks
 from granola.enums import RandomizeResponse, get_attribute_from_enum, validate_enum
 from granola.hooks.base_hook import wrap_in_hooks
 from granola.utils import ABC, IS_PYTHON3, SENTINEL, fixpath, load_serial_df
@@ -460,9 +461,7 @@ class CannedQueries(BaseCommandReaders):
 
     def assign_default_hook(self):
         if not self._hooks_:
-            from granola.hooks.hooks import LoopCannedQueries
-
-            self._hooks_ = [LoopCannedQueries()]
+            self._hooks_ = [granola.hooks.hooks.LoopCannedQueries()]
 
     @wrap_in_hooks
     def get_reading(self, data):

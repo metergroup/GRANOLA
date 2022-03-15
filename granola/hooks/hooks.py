@@ -129,7 +129,7 @@ class ApproachHook(BaseHook):
             float(hooked.instrument_attributes[attribute].value)
         except ValueError:
             raise ValueError(
-                "ApproachHook can only be applied with a float attribute." "\nproblem attribute: %s" % attribute
+                "ApproachHook can only be applied with a float attribute.\nproblem attribute: %s" % attribute
             )
 
 

@@ -25,9 +25,7 @@ def validate_enum(value, enum):
         value (Enum or enum key)
         enum: the enum to validate against
     """
-    error = ValueError(
-        "Invalid Enum Option" "\nEnum -- %s" "\nOption supplied -- %s" % (enum.str_enum_options(), value)
-    )
+    error = ValueError("Invalid Enum Option\nEnum -- %s\nOption supplied -- %s" % (enum.str_enum_options(), value))
     if isinstance(value, Enum):
         if value not in enum:
             raise error

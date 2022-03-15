@@ -141,9 +141,7 @@ def test_that_a_python_dictionary_config_lets_you_use_getters_and_setters():
     # Given a mock pyserial class defined by a python dictionary configuration of getters and setters
     command_readers = {
         "GettersAndSetters": {
-            "default_values": {
-                "sn": "42",
-            },
+            "default_values": {"sn": "42"},
             "getters": [{"cmd": "get -sn\r", "response": "{{ sn }}\r>"}],
             "setters": [{"cmd": "set -sn {{ sn }}\r", "response": "OK\r>"}],
         }
