@@ -34,10 +34,12 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.napoleon",
     "sphinx.ext.doctest",
-    "myst_parser",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.intersphinx",
+    "myst_nb",
 ]
+
+jupyter_execute_notebooks = "auto"
 
 doctest_global_setup = """
 import granola

@@ -40,3 +40,7 @@ b'2a'
 >>> mock_cereal.read(10)
 b'1'
 ```
+
+### More Examples
+
+TODO put link to examples docs stuff

@@ -42,4 +42,5 @@ A Simple Example
 
     Configuration <config/config>
     API Overview <api>
+    examples_notebooks
     logging

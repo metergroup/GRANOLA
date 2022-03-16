@@ -3,7 +3,9 @@ API
 ###
 
 
-Some words and workds
+.. todo::
+
+    Fill this in
 
 Mock Cereal
 =============

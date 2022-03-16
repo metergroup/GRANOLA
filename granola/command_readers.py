@@ -51,9 +51,9 @@ class SerialCmds(object):
         Add a df to data from a csv file path
 
         Args:
-            file (str): Path to csv file. Required
-            data_path_root (str): Path to configuration. Required if file path is not an absolute path
-            extra_fields (dict): Dictionary of extra fields to add to DataFrame of commands. Either
+            file (str): Path to csv file.
+            data_path_root (str, optional): Path to configuration. Required if file path is not an absolute path
+            extra_fields (dict, optional): Dictionary of extra fields to add to DataFrame of commands. Either
                 key will be mapped to a new column in the DataFrame, and each value can either be
                 a single value, in which case it will be broadcast to all rows. Or a list of values
                 the same length as the number of rows in the data.
@@ -172,11 +172,8 @@ class InstrumentAttribute(object):
 class BaseCommandReaders(ABC):
     """
     BaseCommandReaders Class that sets the interface for other CommandReaders. The basic form of
-    a command reader is that Cereal will interact with it solely through `initialize_config`
-    and `get_reading`. `initialize_config` happens durring Cereal's `__init__` method where
-    it passes its config to the CommandReader. The CommandReader is the able to parse out whatever
-    parameter's it needs from said config. And then in `get_reading`, Cereal passes in the
-    serial command and the CommandReader processes it however it does, and returns it.
+    a command reader is that Cereal will interact with it solely through its ``__init__``
+    and :meth:`granola.command_readers.BaseCommandReaders.get_reading`.
 
     The `get_reading` commands are also decorated with @wrap_hooks, which will run the attributes
     `pre_hooks` (iterable type of functions) before `get_reading` and

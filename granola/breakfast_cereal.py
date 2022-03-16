@@ -91,10 +91,17 @@ class Cereal(Serial):
         encoding(str, optional): The encoding scheme used to encode the serial commands and responses
             Defaults to "ascii"
 
+        .. todo::
+
+            Allow passing in write terminator
+
     See Also
     --------
-    Cereal.mock_from_json: Constructor from external configuration file.
+    :meth:`granola.breakfast_cereal.Cereal.mock_from_json` : Constructor from external configuration file.
+
+    :ref:`Canned Queries Configuration`
     """
+    # :ref:`Canned Queries Configuration`
 
     @add_created_at
     def __init__(
@@ -115,7 +122,7 @@ class Cereal(Serial):
         self._encoding = encoding
         self._write_terminator = "\r"  # TODO madeline, make this something to pass in from config.
 
-        self._readers_ = self._setup_command_readers(command_readers, hooks)
+        self._readers_ = self._setup_command_readers_and_hooks(command_readers, hooks)
 
         self._hooks_ = []
         self._next_read = ""  # The next read for this "serial" device
@@ -156,6 +163,21 @@ class Cereal(Serial):
         return config
 
     def __call__(self, *args, **kwargs):
+        """
+        Method to initialize pyserial Serial object. Serperating out the initialization of
+        Breakfast Cereal into its own ``__init__`` method and then initializing pyserial in its
+        __call__ method allows you to setup up Breakfast Cereal configuration outside of your
+        code, and then have your code initialize it again to initialize the pyserial part of
+        Breakfast Cereal. That way you can modify your own code as minimally as possible.
+
+        Args:
+            args: args to pass to pyserial
+            kwargs: keyword arguments to pass to pyserial
+
+        Raises:
+            TypeError if you use __call__ more than once (and therefore pyserial is already
+                initialized).
+        """
         if not hasattr(self, "_port"):
 
             logger.debug("%s initializing Mock Serial with Serial args %s and kwargs %s", self, args, kwargs)
@@ -318,7 +340,7 @@ class Cereal(Serial):
         if not self._is_open:
             raise PortNotOpenError
 
-    def _setup_command_readers(self, command_readers, hooks):
+    def _setup_command_readers_and_hooks(self, command_readers, hooks):
         readers = OrderedDict()
         config_command_readers = self._read_file_config_command_readers(command_readers)
         if config_command_readers:
