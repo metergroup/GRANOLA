@@ -14,5 +14,6 @@ exclude =
     .venv,
     granola/_version.py,
     versioneer.py
+    docs
 
 max-line-length = 120

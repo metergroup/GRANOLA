@@ -17,6 +17,7 @@ from granola.utils import (
     encode_escape_char,
     get_path,
     is_terminated_with,
+    make_path,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,10 @@ class SerialSniffer(Serial):
         quotechar : passed to csv.writer()
         write_terminator (str) : The character sequence used to indicate that a serial command is complete
         read_terminator (str) : The character sequence used to indicate that a serial response is complete
+
+    .. todo::
+
+        Change how this is done to the same way the Breakfast Cereal is done (init then __call__)
     """
 
     outfile = ""
@@ -54,6 +59,7 @@ class SerialSniffer(Serial):
                 self.outfile = datetime.now().strftime("%Y-%m-%dT%H-%M-%S") + "_serial_commands.csv"
 
         self.outpath = get_path(self.outfile)
+        make_path(self.outpath)
 
         logger.debug("%s outpath: %s", self, self.outpath)
 

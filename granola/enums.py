@@ -34,6 +34,21 @@ def validate_enum(value, enum):
 
 
 class DocumentedEnum(Enum):
+    """
+    Enum Base class to inherit from that replaces the value option with a description option.
+
+    Examples:
+        >>> class HookTypes(DocumentedEnum):
+        ...     pre_reading = "Hook to run before `get_reading` methods"
+        ...     post_reading = "Hook to run after `get_reading` methods"
+
+        >>> HookTypes.pre_reading.name
+        "pre_reading"
+
+        >>> HookTypes.post_reading.description
+        "Hook to run before `get_reading` methods"
+    """
+
     def __init__(self, description):
         self.description = description
 

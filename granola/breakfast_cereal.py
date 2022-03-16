@@ -77,7 +77,7 @@ class Cereal(Serial):
             :ref:`Command Readers and Hooks Configuration`.
             defaults to ``[]``
 
-        data_path_root (str, optional): Path to the where all data file paths (for
+        data_path_root (str | Path, optional): Path to the where all data file paths (for
             Command Readers or Custom Hooks) will be referenced from.
 
             .. todo::
@@ -99,9 +99,10 @@ class Cereal(Serial):
     --------
     :meth:`granola.breakfast_cereal.Cereal.mock_from_json` : Constructor from external configuration file.
 
-    :ref:`Canned Queries Configuration`
+    :ref:`Configuration Overview` : Configuration Instructions
+
+    :ref:`Basic Overview of Mock Cereal and API` : Intro Tutorial
     """
-    # :ref:`Canned Queries Configuration`
 
     @add_created_at
     def __init__(
@@ -176,7 +177,7 @@ class Cereal(Serial):
 
         Raises:
             TypeError if you use __call__ more than once (and therefore pyserial is already
-                initialized).
+            initialized).
         """
         if not hasattr(self, "_port"):
 
