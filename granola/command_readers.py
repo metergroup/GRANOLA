@@ -173,12 +173,15 @@ class BaseCommandReaders(ABC):
     """
     BaseCommandReaders Class that sets the interface for other CommandReaders. The basic form of
     a command reader is that Cereal will interact with it solely through its ``__init__``
-    and :meth:`granola.command_readers.BaseCommandReaders.get_reading`.
+    and :meth:`granola.command_readers.BaseCommandReaders.get_reading`. The ``get_reading``
+    method is the method that will be called, handed in a serial command, processed in some way,
+    and returned. If the Command Reader can not process the serial command, it instead returns
+    None or a SENTINEL object (more on that below) to indicate that the supplied serial command
+    isn't defined for that Command Reader, allowing any other Command Readers to process it instead.
 
-    The `get_reading` commands are also decorated with @wrap_hooks, which will run the attributes
-    `pre_hooks` (iterable type of functions) before `get_reading` and
-    `post_hooks` (iterable type of functions) after `get_reading`, allowing you to modify the
-    behavior of the `get_reading` method for certain serial commands.
+    The `get_reading` commands are also decorated with @wrap_hooks, which will run ``_hooks_``
+    attributes (of type :mod:`~granola.hooks.hooks`) that have a defined ``prehook`` method before
+    ``get_reading`` and ``_hooks_`` with a defined ``posthook`` method after after ``get_reading``.
 
     Because "" is a valid serial command response, we use None to signify an unsupported response.
     We also have a defined SENTINEL object for response that are undefined in other ways.
@@ -189,14 +192,24 @@ class BaseCommandReaders(ABC):
     as well.
 
     Args:
-        pre_hooks (list or tuple): iterable of hooks to run before `get_readings`
-        post_hooks (list or tuple): iterable of hooks to run after `get_readings`
+        hooks(list[BaseHook], optional): List of Hooks to run on this Command Reader.
+            Defaults to `[]`
+        data_path_root(str | Path, optional): Path to the where all data file paths for this command reader
+            (such as defining the serial commands) will be referenced from. Not every Command
+            Reader, or every way to initialize a certain Command Reader uses data files, so
+            this doesn't apply to every Command Reader.
+            Defaults to current working directory.
+
+    See Also
+    --------
+    :ref:`Command Readers and Hooks Configuration` : Configuration Overview
+    :ref:`Basic Overview of Mock Cereal and API` : Intro Tutorial
     """
 
-    def __init__(self, data_path_root=None, hooks=None, *args, **kwargs):
+    def __init__(self, hooks=None, data_path_root=None, *args, **kwargs):
         super(BaseCommandReaders, self).__init__()
-        self._data_path_root = data_path_root if data_path_root is not None else os.getcwd()
         self._hooks_ = hooks if hooks is not None else []
+        self._data_path_root = data_path_root if data_path_root is not None else os.getcwd()
 
     @wrap_in_hooks
     @abc.abstractmethod
@@ -225,17 +238,21 @@ class BaseCommandReaders(ABC):
 
 class GettersAndSetters(BaseCommandReaders):
     """
-    Helper class that processes getters and setters. It initializes the default values set
-    in the config and stores those values in the attribute `self.instrument_attributes`. These
-    attributes can then be modified with setters defined in the setters from the config and stored
-    in `self.setters`, and then grabbed from the getters defined in getters from the config and
-    stored in `self.getters`.
+    Command Reader to handle getters and setters. It initializes the default values and stores those
+    values in the attribute `self.instrument_attributes`. These attributes can then be modified with
+    setters defined in the setters in `self.setters`, and then grabbed from the getters stored in
+    `self.getters`.
 
-    Inside the getters and setters, the values pulled out will be the values
-    inside matching backticks (`).
+    Inside the getters and setters, the formatting follows Jinja2 formatting syntax.
 
     Args:
         arguments for BaseCommandReaders
+
+    See Also
+    --------
+    :ref:`Getters and Setters Configuration`
+
+    :ref:`Advanced Getters and Setters`
     """
 
     def __init__(
@@ -268,7 +285,8 @@ class GettersAndSetters(BaseCommandReaders):
         """
         Processes incoming serial command data and sends it to `self._process_getter` to see if
         it is a getter and get its response, if not, sends it to `self._process_setter`,
-        to see if it is a setter and get its response, if not, it returns None.
+        to see if it is a setter and then set the respective setter and get its response,
+        if not, it returns None.
 
         Args:
             data (str): Incoming serial command
@@ -411,14 +429,18 @@ class GettersAndSetters(BaseCommandReaders):
 class CannedQueries(BaseCommandReaders):
     """
     Helper class that processes canned queries (queries defined ahead of time from a list
-    such as a csv).
+    such as a csv or configuration dictionary).
 
     It stores a dictionary of :class:`~granola.command_readers.SerialCmds`, which represents
     canned queries as pandas DataFrames of the serial commands. And then as a serial command comes in,
     it is directed to the correct :class:`~granola.command_readers.SerialCmds` and then creates a slice of
     your DataFrame to get only the matching serial commands to iterate over.
 
-    See :ref:`Canned Queries Configuration` for examples on configuration formatting.
+    See Also
+    --------
+    :ref:`Canned Queries Configuration` for examples on configuration formatting.
+
+    :ref:`Command Readers and Hooks Configuration` : Command Readers and Hook Overviews
     """
 
     def __init__(self, data=None, data_path_root=None, **kwargs):
@@ -445,15 +467,26 @@ class CannedQueries(BaseCommandReaders):
     @wrap_in_hooks
     def get_reading(self, data):
         """
-        Process incoming canned queries and route them to the appropriate df and create
-        a generator of that df queries to iterate through them.
+        Process incoming canned queries by extracting just the serial commands that match the
+        incoming serial command and then create a generator of those matching serial commands
+        and response to iterate through.
 
         Args:
             data (str): Incoming serial command
 
         Returns:
-            str | None: the response from matching serial df. If no matching matching command is found,
-            then it returns None.
+            str | None | SENTINEL: the response from matching serial df.
+            If no matching matching command is found, then it returns None.
+            If The generator is exhausted, and no Hook is activate to reseed the generator or
+            alter the behavior in some other way, return SENTINEL.
+
+        See Also
+        --------
+        :mod:`Hooks <granola.hooks.hooks>` : Hook API information
+
+        :ref:`Canned Queries Configuration` for examples on configuration formatting.
+
+        :ref:`Command Readers and Hooks Configuration` : Command Readers and Hook Overviews
         """
         try:
             if data not in self.serial_generator:
