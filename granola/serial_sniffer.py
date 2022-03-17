@@ -201,3 +201,15 @@ def _open_csv_writer(path, mode, **kwargs):
         yield csvwriter
     finally:
         csvfile.close()
+
+
+__doc__ = """
+``SerialSniffer`` is a class that can be used in place of pyserial Serial to track every write and read for pyserial.
+All it does is capture every incoming write and read, writes it out to a csv, and then passes it along to
+pyserial.
+
+You can easily run ``SerialSniffer`` in your code for a one off to just capture some commands for mocking later
+by replacing your pyserial Serial import with::
+
+    from granola import SerialSniffer as Serial
+"""
