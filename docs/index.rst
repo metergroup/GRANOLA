@@ -40,7 +40,7 @@ A Simple Example
     :name: mastertoc
     :titlesonly:
 
-    Configuration <config/config>
+    config/config
     API Overview <api>
-    examples_notebooks
+    examples/examples_notebooks
     logging

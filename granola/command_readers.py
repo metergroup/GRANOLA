@@ -44,6 +44,7 @@ class SerialCmds(object):
         validate_enum(self.will_randomize_responses, RandomizeResponse)
 
     def add_dataframe(self, df):
+        """Add dataframe to data"""
         self.data.append(df)
 
     def add_df_from_file(self, file, data_path_root=None, **kwargs):
@@ -179,7 +180,7 @@ class BaseCommandReaders(ABC):
     None or a SENTINEL object (more on that below) to indicate that the supplied serial command
     isn't defined for that Command Reader, allowing any other Command Readers to process it instead.
 
-    The `get_reading` commands are also decorated with @wrap_hooks, which will run ``_hooks_``
+    The `get_reading` commands are also decorated with @wrap_in_hooks, which will run ``_hooks_``
     attributes (of type :mod:`~granola.hooks.hooks`) that have a defined ``prehook`` method before
     ``get_reading`` and ``_hooks_`` with a defined ``posthook`` method after after ``get_reading``.
 
@@ -570,3 +571,11 @@ class CannedQueries(BaseCommandReaders):
                 yield df["response"].iloc[row]
                 if will_randomize_responses == RandomizeResponse.randomize_and_remove.name:
                     df = df.drop(row)
+
+
+__doc__ = """
+Command Readers are the objects that handle the processing of individual serial
+commands. Each serial command that comes in is processed by each Command Reader and
+once a Command Reader returns a valid response, the next Command Readers will skip processing the command.
+This allows you to change the behavior of individual commands by defining new Command Readers.
+"""

@@ -408,3 +408,16 @@ class Cereal(Serial):
     _read_file_config_hooks = _read_file_config_from_classes(BaseHook)
 
     _read_file_config_command_readers = _read_file_config_from_classes(BaseCommandReaders)
+
+
+__doc__ = """
+This module provides the core of GRANOLA with the Cereal class (affectionately called Breakfast Cereal).
+Breakfast Cereal is the core Mock Serial object that handles mocking pyserial's Serial class. It does
+this with a number of :mod:`Command Readers <granola.command_readers>` (:ref:`Guide <Configuration Overview>`)
+that each are responsible for processing a number of serial commands in different ways. This allows
+very extensible functionality with different types of serial commands, and user specific customization
+by defining your own Command Readers.
+
+You can further customize the behavior of Command Readers by adding in :mod:`Hook <granola.hooks.hooks>`
+that run a preditermined spots. Also see :ref:`Configuration Overview`.
+"""

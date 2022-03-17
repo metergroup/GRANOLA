@@ -25,7 +25,11 @@ class BaseHook(ABC):
         Args:
             hooked: instance of hooked class
             data (str): Serial command
+
+        Returns:
+            data (str)
         """
+        return data
 
     def post_reading(self, hooked, result, data, **kwargs):
         """
@@ -35,7 +39,10 @@ class BaseHook(ABC):
             hooked: instance of hooked class
             result (str): Returned result from serial command.
             data (str): Serial command
+
+        Returns (str)
         """
+        return result
 
 
 def register_hook(hook_type_enum, hooked_classes):  # TODO madeline allow passing in attributes and including
@@ -97,7 +104,8 @@ def register_hook(hook_type_enum, hooked_classes):  # TODO madeline allow passin
 
 def _run_pre_reading_hooks(hooked, data, **kwargs):
     for hook in hooked._hooks_:
-        hook.pre_reading(hooked=hooked, data=data, **kwargs)
+        data = hook.pre_reading(hooked=hooked, data=data, **kwargs)
+    return data
 
 
 def _run_post_reading_hooks(hooked, result, data, **kwargs):
@@ -118,7 +126,7 @@ def wrap_in_hooks(func):
 
     @functools.wraps(func)
     def wrapper(hooked, data, **kwargs):
-        _run_pre_reading_hooks(hooked=hooked, data=data, **kwargs)
+        data = _run_pre_reading_hooks(hooked=hooked, data=data, **kwargs)
         result = func(hooked, data, **kwargs)
         result = _run_post_reading_hooks(hooked=hooked, result=result, data=data, **kwargs)
         return result
@@ -149,32 +157,32 @@ Hooks as Classes
 
 Here is an example of a hook class being created
 
-    >>> from granola import GettersAndSetters, CannedQueries, BaseHook
+>>> from granola import GettersAndSetters, CannedQueries, BaseHook
 
-    >>> class MyHook(BaseHook):
-    ...     hooked_classes=[GettersAndSetters, CannedQueries]
-    ...     '''This is the list of classes that the hook will be run on.'''
-    ...
-    ...     def __init__(self, attributes=["get -sn\r"], include_or_exclude="exclude", some_parameter="default_val"):
-    ...         '''attributes and include_or_exclude are parameters (with defaults) that come from
-    ...         BaseHook. This specifies which serial commands or other type of attribute will be
-    ...         include or exclude on your hook (which will be ran). By saying attributes=["get -sn\r"]
-    ...         and include_or_exclude="include" we are saying to exclude "get -sn\r" and
-    ...         include all other commands.
-    ...         '''
-    ...
-    ...         super(MyHook, self).__init__(attributes=attributes, include_or_exclude=include_or_exclude)
-    ...         self.some_parameter = some_parameter
-    ...         self.calculated_value = None
-    ...
-    ...     def pre_reading(self, hooked, data, **kwargs):
-    ...         '''store the length of the the incoming command (data) * ``self.some_parameter``
-    ...         self.calculated_value = self.some_parameter * len(data)
-    ...
-    ...     def post_reading(self, hooked, result, data, **kwargs):
-    ...         '''Change the serial result to the previous ``self.calculated_value`` * ``len(result)``
-    ...         result = self.calculated_value * len(result)
-    ...         return result
+>>> class MyHook(BaseHook):
+...     hooked_classes=[GettersAndSetters, CannedQueries]
+...     '''This is the list of classes that the hook will be run on.'''
+...
+...     def __init__(self, attributes=["get -sn\r"], include_or_exclude="exclude", some_parameter="default_val"):
+...         '''attributes and include_or_exclude are parameters (with defaults) that come from
+...         BaseHook. This specifies which serial commands or other type of attribute will be
+...         include or exclude on your hook (which will be ran). By saying attributes=["get -sn\r"]
+...         and include_or_exclude="include" we are saying to exclude "get -sn\r" and
+...         include all other commands.
+...         '''
+...
+...         super(MyHook, self).__init__(attributes=attributes, include_or_exclude=include_or_exclude)
+...         self.some_parameter = some_parameter
+...         self.calculated_value = None
+...
+...     def pre_reading(self, hooked, data, **kwargs):
+...         '''store the length of the the incoming command (data) * ``self.some_parameter``
+...         self.calculated_value = self.some_parameter * len(data)
+...
+...     def post_reading(self, hooked, result, data, **kwargs):
+...         '''Change the serial result to the previous ``self.calculated_value`` * ``len(result)``
+...         result = self.calculated_value * len(result)
+...         return result
 
 Doing a hook this way, as a class definition allows you to specify a ``pre_reading`` and ``post_reading``
 method on the same hook. Some hooks (such as the approach hook) rely on it being ran before and after the reading
@@ -190,15 +198,15 @@ a function and decorate it with the :func:`~granola.hooks.base_hook.register_hoo
 Here is an example of a hook being create like that::
 
 
-    >>> from granola import register_hook, CannedQueries
+>>> from granola import register_hook, CannedQueries
 
-    >>> @register_hook(hook_enum="post_reading", hooked_classes=[CannedQueries])
-    ... def LoopCannedQueries(hooked, result, data, **kwargs):
-    ...     if result is SENTINEL:
-    ...         hooked._start_serial_generator(data)
-    ...         result = next(hooked.serial_generator[data])
-    ...         return result
-    ...     return result
+>>> @register_hook(hook_enum="post_reading", hooked_classes=[CannedQueries])
+... def LoopCannedQueries(hooked, result, data, **kwargs):
+...     if result is SENTINEL:
+...         hooked._start_serial_generator(data)
+...         result = next(hooked.serial_generator[data])
+...         return result
+...     return result
 
 This is the actual implementation of the looping hook that by default loops all canned queries
 (minus the docstring), you can find the documentation for that hook at the bottom of this page.
@@ -217,18 +225,18 @@ into ``Cereal``, and not worry about what else happens with the decorator
 Hook Examples
 ******************
 
-    >>> from granola import LoopCannedQueries, Cereal
+>>> from granola import LoopCannedQueries, Cereal
 
-    >>> # this way works by initializing LoopCannedQueries to non default values
-    ... hook = LoopCannedQueries(attributes={"get batt\r"}, include_or_exclude="include")
-    ... bk_cereal = Cereal(some_config, hooks=[hook])
+>>> # this way works by initializing LoopCannedQueries to non default values
+... hook = LoopCannedQueries(attributes={"get batt\r"}, include_or_exclude="include")
+... bk_cereal = Cereal(some_config, hooks=[hook])
 
-    >>> # This version we initialize it to its default values
-    ... hook = LoopCannedQueries()
-    ... bk_cereal = Cereal(some_config, hooks=[hook])
+>>> # This version we initialize it to its default values
+... hook = LoopCannedQueries()
+... bk_cereal = Cereal(some_config, hooks=[hook])
 
-    >>> # This version we don't initialize it at all and let Cereal initialize it to its default values
-    ... bk_cereal = Cereal(some_config, hooks=[LoopCannedQueries])
+>>> # This version we don't initialize it at all and let Cereal initialize it to its default values
+... bk_cereal = Cereal(some_config, hooks=[LoopCannedQueries])
 
 This last example also shows how to pass hooks to ``Cereal``. You pass hooks in an iterable to
 ``Cereal``, and ``Cereal`` will associate the hook with whatever class it needs to
