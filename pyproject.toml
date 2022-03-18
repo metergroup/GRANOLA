@@ -31,6 +31,6 @@ exclude = '''
 '''
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules"
+addopts = "--doctest-glob='*.rst'"
 doctest_optionflags = "NORMALIZE_WHITESPACE"
 norecursedirs = "_build"
