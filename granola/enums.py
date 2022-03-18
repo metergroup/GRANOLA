@@ -43,10 +43,10 @@ class DocumentedEnum(Enum):
         ...     post_reading = "Hook to run after `get_reading` methods"
 
         >>> HookTypes.pre_reading.name
-        "pre_reading"
+        'pre_reading'
 
         >>> HookTypes.post_reading.description
-        "Hook to run before `get_reading` methods"
+        'Hook to run after `get_reading` methods'
     """
 
     def __init__(self, description):

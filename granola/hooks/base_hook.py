@@ -40,7 +40,8 @@ class BaseHook(ABC):
             result (str): Returned result from serial command.
             data (str): Serial command
 
-        Returns (str)
+        Returns:
+            result (str)
         """
         return result
 
@@ -176,11 +177,11 @@ Here is an example of a hook class being created
 ...         self.calculated_value = None
 ...
 ...     def pre_reading(self, hooked, data, **kwargs):
-...         '''store the length of the the incoming command (data) * ``self.some_parameter``
+...         '''store the length of the the incoming command (data) * ``self.some_parameter``'''
 ...         self.calculated_value = self.some_parameter * len(data)
 ...
 ...     def post_reading(self, hooked, result, data, **kwargs):
-...         '''Change the serial result to the previous ``self.calculated_value`` * ``len(result)``
+...         '''Change the serial result to the previous ``self.calculated_value`` * ``len(result)``'''
 ...         result = self.calculated_value * len(result)
 ...         return result
 
@@ -195,12 +196,11 @@ Hooks as Functions
 If your hook doesn't require both a ``pre_reading`` and ``post_reading``, you can instead just write
 a function and decorate it with the :func:`~granola.hooks.base_hook.register_hook` decorator.
 
-Here is an example of a hook being create like that::
-
+Here is an example of a hook being created
 
 >>> from granola import register_hook, CannedQueries
 
->>> @register_hook(hook_enum="post_reading", hooked_classes=[CannedQueries])
+>>> @register_hook(hook_type_enum="post_reading", hooked_classes=[CannedQueries])
 ... def LoopCannedQueries(hooked, result, data, **kwargs):
 ...     if result is SENTINEL:
 ...         hooked._start_serial_generator(data)
@@ -208,13 +208,17 @@ Here is an example of a hook being create like that::
 ...         return result
 ...     return result
 
-This is the actual implementation of the looping hook that by default loops all canned queries
-(minus the docstring), you can find the documentation for that hook at the bottom of this page.
+This is the actual implementation of :class:`~granola.hooks.hooks.LoopCannedQueries` the looping hook that by
+default loops all canned queries (minus the docstring)
 
-``register_hook`` takes two arguments, the ``hook_type_enum``, which tells you if it is a pre or
-post_reading hook (can be passed in as a direct enum object or as a string), and the ``hooked_classes``,
-which tell you which classes the hook applies to. After that is just your function definition,
-which the arguments for that follow the ``post_reading`` method for :class:`~granola.hooks.base_hook.BaseHook`.
+:func:`~granola.hooks.base_hook.register_hook` takes two arguments, the ``hook_type_enum``
+(see :class:`~granola.enums.HookTypes` for options and more details), which tells you if it is a
+pre or post_reading hook (can be passed in as a direct enum object or as a string), and the ``hooked_classes``,
+which tell you which :mod:`~granola.command_readers` the hook applies to.
+After that it is just your function definition.
+
+The signature of your function should match the signature of base method you are using
+(``post_reading``, ``post_reading``, etc.) from :class:`~granola.hooks.base_hook.BaseHook`.
 
 After you have "registered" your hook function, it can then be initialized like a hook class.
 (i.e. substantiating it before you pass it to ``Cereal``). If you don't instantiate it, then Cereal
@@ -226,19 +230,21 @@ Hook Examples
 ******************
 
 >>> from granola import LoopCannedQueries, Cereal
+>>> command_readers = {"CannedQueries": {"data": [{"cmd\r": "response"}]}}
 
 >>> # this way works by initializing LoopCannedQueries to non default values
-... hook = LoopCannedQueries(attributes={"get batt\r"}, include_or_exclude="include")
-... bk_cereal = Cereal(some_config, hooks=[hook])
+>>> hook = LoopCannedQueries(attributes={"get batt\r"}, include_or_exclude="include")
+>>> cereal = Cereal(command_readers=command_readers, hooks=[hook])
 
 >>> # This version we initialize it to its default values
-... hook = LoopCannedQueries()
-... bk_cereal = Cereal(some_config, hooks=[hook])
+>>> hook = LoopCannedQueries()
+>>> ccereal = Cereal(command_readers=command_readers, hooks=[hook])
 
 >>> # This version we don't initialize it at all and let Cereal initialize it to its default values
-... bk_cereal = Cereal(some_config, hooks=[LoopCannedQueries])
+>>> hook = LoopCannedQueries
+>>> cereal = Cereal(command_readers=command_readers, hooks=[hook])
 
-This last example also shows how to pass hooks to ``Cereal``. You pass hooks in an iterable to
+These examples also shows how to pass hooks to ``Cereal``. You pass hooks in an iterable to
 ``Cereal``, and ``Cereal`` will associate the hook with whatever class it needs to
 based on the classes listed in your hook's ``hooked_classes``. In these example, ``LoopCannedQueries`` would
 only run on ``CannedQueries``, but ``MyHook`` would run on ``CannedQueries`` and ``GettersAndSetters``.

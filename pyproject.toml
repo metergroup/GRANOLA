@@ -29,3 +29,9 @@ exclude = '''
     | versioneer.py
 )
 '''
+
+[tool.pytest.ini_options]
+testpaths = "granola docs"
+addopts = "--doctest-modules --doctest-glob='*.rst'"
+doctest_optionflags = "NORMALIZE_WHITESPACE"
+norecursedirs = "_build"
