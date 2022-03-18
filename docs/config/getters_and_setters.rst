@@ -2,9 +2,6 @@
 Getters and Setters Configuration
 =================================
 
-.. todo::
-    Allow different eol characters
-
 To use the :mod:`Command Reader <granola.command_readers>` :class:`~granola.command_readers.GettersAndSetters`, you must define
 ``"getters_and_setters"`` as a dictionary in your configuration.
 

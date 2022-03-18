@@ -1,0 +1,10 @@
+cmd,response
+start\r, OK\r>
+get -volt\r, 7800\r>
+get -volt\r, 8000\r>
+get -volt\r, 4000\r>
+check -integrity\r, GOOD\r>
+radio on\r, OK\r>
+get name\r, Cereal Test Fixture\r
+reset\r, OK\r>
+get batt\r, 100\r>

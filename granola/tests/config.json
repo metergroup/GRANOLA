@@ -139,14 +139,15 @@
 
     "stick_hook": {
         "command_readers":{
-            "CannedQueries": {"data": [{"1\r": "1", "2\r": {"response": "3", "delay": 3}}]}
+            "CannedQueries": {"data": [{"1\n": "1", "2\n": {"response": "3", "delay": 3}}]}
         },
         "hooks": {
             "StickCannedQueries": {
-                "attributes": ["2\r"],
+                "attributes": ["2\n"],
                 "include_or_exclude": "exclude"
             }
-        }
+        },
+        "write_terminator": "\n"
     },
 
     "command_readers": {

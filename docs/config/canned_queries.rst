@@ -1,10 +1,12 @@
 =================================
 Canned Queries Configuration
 =================================
-
-.. todo::
-
-    update with this to not use ```DEFAULT```
+..
+    >>> import sys, pytest
+    >>> is_python_35 = sys.version_info[0] == 3 and sys.version_info[1] == 5
+    >>> if is_python_35:
+    ...     pytest.skip("This doctest doesn't work with Python 3.5 because dictionary ordering is not guaranteed."
+    ...                 " All of the behavior is the same, just the underlying pandas DataFrame order will be different")
 
 To use the :mod:`Command Reader <granola.command_readers>` :class:`~granola.command_readers.CannedQueries`,
 you must define ``"canned_queries"`` as a dictionary in your configuration.
@@ -13,58 +15,42 @@ Which involves having a ``"data"`` dictionary with either file paths listed or s
 File Path Option
 ******************
 
-To define your serial commands with file paths
+>>> from granola import CannedQueries, Cereal
 
-.. code-block:: JSON
+To define your serial commands with file paths given a cereal_cmds.csv like this::
 
-    {
-        "CannedQueries": {
-            "data": [
-                "data\\fixture\\fixture_serial_cmds.csv",
-                "data\\sensor\\teros_12_get_reading_cmds.csv",
-                "data\\sensor\\teros_12_serial_cmds.csv"
-            ]
-        }
-    }
+    cmd,response
+    start\r, OK\r>
+    get -volt\r, 7800\r>
+    get -volt\r, 8000\r>
+    get -volt\r, 4000\r>
+    check -integrity\r, GOOD\r>
+    radio on\r, OK\r>
+    get name\r, Cereal Test Fixture\r
+    reset\r, OK\r>
+    get batt\r, 100\r>
 
-Where each key is a regex of a serial command you want to get routed to that csv. Searches
-occur in order of top to bottom with the exception of ``"`DEFAULT`"``, which is
-the csv that any command that doesn't have a matching key will search in.
+>>> command_readers = {"CannedQueries": {"data": ["cereal_cmds.csv"]}}
+>>> cereal = Cereal(command_readers=command_readers)
+>>> cereal._readers_["CannedQueries"].serial_df
+                    cmd               response
+0             start\r                  OK\r>
+1         get -volt\r                7800\r>
+2         get -volt\r                8000\r>
+3         get -volt\r                4000\r>
+4  check -integrity\r                GOOD\r>
+5          radio on\r                  OK\r>
+6          get name\r  Cereal Test Fixture\r
+7             reset\r                  OK\r>
+8          get batt\r                 100\r>
 
-Each file can also be defined either as a relative path to your configuration file (if you define your configuration
-directly in python, and don't include the a ``data_path_root`` input, it defaults to the current working directory
-for the relative base directory).
 
-Direct Serial Command Definitions
-************************************
+Each data file can also be defined either as an absolute path or as a relative path path.
+If you define your paths as a relative path, they are defined in relation to :class:`.Cereal`'s input parameter
+``data_path_root``. See :class:`.Cereal` for more details.
 
-To define your serial commands directly, here is a basic example
-
-.. code-block:: JSON
-
-    {
-        "CannedQueries": {
-            "data": {
-                "`DEFAULT`": {"get -temp\r": {"response": ["20\r>",
-                                                            "22\r>"]},
-                                "test -off\r": "OK\r>"}}
-        }
-    }
-
-You can also additionally pass extra fields to to the resulting DataFrame, as such
-
-.. code-block:: JSON
-
-    {
-        "CannedQueries": {
-            "data": {
-                "`DEFAULT`": {"get -temp\r": {"response": ["20\r>",
-                                                            "22\r>"]},
-                                "test -off\r": "OK\r>"}},
-            "extra_col1": 2
-            "extra_col2": [1, 2, 3]
-        }
-    }
+Direct Serial Commands Option
+*****************************
 
 You can pass either a single value to be broadcasted to every value in a DataFrame,
 or make a list of values that must be the same length as the DataFrames it is matching
@@ -72,13 +58,6 @@ against.
 
 The specific formats you must follow can be seen with the :py:class:`~granola.command_readers.CannedQueries` Command Reader.
 This is a quick overview of all the options for inside the serial commands dictionary.
-
->>> import sys, pytest
->>> is_python_35 = sys.version_info[0] == 3 and sys.version_info[1] == 5
->>> if is_python_35:
-...     pytest.skip("This doctest doesn't work with Python 3.5 because dictionary ordering is not guaranteed."
-...                 " All of the behavior is the same, just the underlying pandas DataFrame order will be different")
->>> from granola import CannedQueries, Cereal
 
 >>> command_readers = {
 ...     "CannedQueries": {

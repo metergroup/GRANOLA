@@ -35,8 +35,10 @@ def all_equal(iterator):
     return all(first == x for x in iterator)
 
 
-def query_device(bk_cereal, cmd):
-    bk_cereal.write(("{cmd}\r".format(cmd=cmd)).encode(bk_cereal._encoding))
+def query_device(bk_cereal, cmd, write_terminator="\r"):
+    bk_cereal.write(
+        ("{cmd}{write_terminator}".format(cmd=cmd, write_terminator=write_terminator)).encode(bk_cereal._encoding)
+    )
     return bk_cereal.read(1000)
 
 

@@ -92,10 +92,6 @@ class Cereal(Serial):
         encoding(str, optional): The encoding scheme used to encode the serial commands and responses
             Defaults to "ascii"
 
-    .. todo::
-
-        Allow passing in write terminator
-
     See Also
     --------
     :meth:`.mock_from_json` : Constructor from external configuration file
@@ -187,6 +183,7 @@ class Cereal(Serial):
         hooks=None,
         data_path_root=None,
         unsupported_response="Unsupported\r>",
+        write_terminator="\r",
         encoding="ascii",
     ):
         self._data_path_root = (
@@ -197,7 +194,7 @@ class Cereal(Serial):
 
         self._unsupported_response = unsupported_response
         self._encoding = encoding
-        self._write_terminator = "\r"  # TODO madeline, make this something to pass in from config.
+        self._write_terminator = write_terminator
 
         self._readers_ = self._setup_command_readers_and_hooks(command_readers, hooks)
 
@@ -211,7 +208,7 @@ class Cereal(Serial):
             self._isOpen = True
 
     @classmethod
-    def mock_from_json(cls, config_key, config_path="config.json", *args, **kwargs):
+    def mock_from_json(cls, config_key, config_path="config.json", **kwargs):
         """
         Load configuration dictionary based on config_key and config_path and return a
         Breakfast Cereal class.
@@ -221,7 +218,9 @@ class Cereal(Serial):
         """
         config = cls._load_json_config(config_key=config_key, config_path=config_path)
         kwargs.update(config)
-        return cls(data_path_root=config_path, *args, **kwargs)
+        if "data_path_root" not in kwargs:
+            kwargs["data_path_root"] = config_path
+        return cls(**kwargs)
 
     @classmethod
     def _load_json_config(cls, config_key, config_path="config.json"):

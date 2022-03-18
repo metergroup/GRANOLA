@@ -33,8 +33,6 @@ it as a string, then the CommandReader needs to be imported or defined before yo
 Custom Hooks
 ****************
 
-
-
 To pass custom :mod:`~granola.hooks.hooks`, as well as to change the
 order they are processed in, you can define ``"hooks"`` in your configuration.
 

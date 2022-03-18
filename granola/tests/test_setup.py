@@ -142,20 +142,20 @@ def test_that_a_python_dictionary_config_lets_you_use_getters_and_setters():
     command_readers = {
         "GettersAndSetters": {
             "default_values": {"sn": "42"},
-            "getters": [{"cmd": "get -sn\r", "response": "{{ sn }}\r>"}],
-            "setters": [{"cmd": "set -sn {{ sn }}\r", "response": "OK\r>"}],
+            "getters": [{"cmd": "get -sn\n", "response": "{{ sn }}\n>"}],
+            "setters": [{"cmd": "set -sn {{ sn }}\n", "response": "OK\n>"}],
         }
     }
     new_sn = "2.718"
 
     # When we initialize it
-    mock = Cereal(command_readers=command_readers)()
+    mock = Cereal(command_readers=command_readers, write_terminator="\n")()
     # and issue get and set sn commands
-    query_device(mock, "set -sn %s" % new_sn)
-    sn = query_device(mock, "get -sn")
+    query_device(mock, "set -sn %s" % new_sn, write_terminator="\n")
+    sn = query_device(mock, "get -sn", write_terminator="\n")
 
     # Then the serial number should be what we set it to
-    true_response = new_sn + "\r>"
+    true_response = new_sn + "\n>"
     decoded_sn = decode_response(sn, mock)
     assert true_response == decoded_sn
 
@@ -167,13 +167,13 @@ def test_a_json_config_can_specify_a_hook___stick_hook_specifically():
 
     # When we query it enough to ensure it has exhausted the generator
     for _ in range(50):
-        bk_cereal.write(b"1\r")
+        bk_cereal.write(b"1\n")
         bk_cereal.read(100)
 
     responses = set()
     # Then all future queries should be the same
     for _ in range(10):
-        bk_cereal.write(b"1\r")
+        bk_cereal.write(b"1\n")
         responses.add(bk_cereal.read(100))
 
         assert len(responses) == 1
@@ -189,7 +189,7 @@ def test_a_json_config_can_specify_a_hook_arguments_to_exclude_a_query___stick_h
     responses = []
     for _ in range(10):
         with caplog.at_level(logging.WARNING):
-            bk_cereal.write(b"2\r")
+            bk_cereal.write(b"2\n")
             responses.append(bk_cereal.read(100))
 
     # Then we capture in our log that there was an unhandled response from the hook
