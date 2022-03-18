@@ -497,13 +497,3 @@ by defining your own Command Readers.
 You can further customize the behavior of Command Readers by adding in :mod:`Hook <granola.hooks.hooks>`
 that run a preditermined spots. Also see :ref:`Configuration Overview`.
 """
-
-
-command_readers = {
-    "CannedQueries": {"data": [{"1\r": "1", "2\r": ["2a", "2b"]}]},
-    "GettersAndSetters": {
-        "default_values": {"sn": "42"},  # We first initialize a default
-        "getters": [{"cmd": "get sn\r", "response": "{{ sn }}\r>"}],  # we define default
-        "setters": [{"cmd": "set sn {{ sn }}\r", "response": "OK\r>"}],  # and we define a setter
-    },
-}

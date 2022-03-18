@@ -74,26 +74,35 @@ The specific formats you must follow can be seen with the :py:class:`~granola.co
 This is a quick overview of all the options for inside the serial commands dictionary.
 
 
->>> from granola import CannedQueries
+>>> from granola import CannedQueries, Cereal
 
->>> data = [
-...     {
-...         "cmd1\r": "some response\r>",
-...         "cmd2\r": {"response": "some response\r"},
-...         "cmd3\r": {"response": "some response\r>", "another_column": 1},
-...         "cmd4\r": {"response": ["some response1\r>", "some response2\r>"]},
-...         "cmd5\r": {"response": ["some response1\r>", "some response2\r>"], "another_column": 1},
-...         "cmd6\r": {"response": ["some response1\r>", "some response2\r>"], "another_column": [1, 2]},
-...         "cmd7\r": {"response": [["some response1\r>", {"another_column": 42}], "some response2\r>"]},
-...         "cmd8\r": {
-...             "response": [["some response1\r>", {"another_column": 42}], "some response2\r>"],
-...             "another_column": 1,
-...         },
-...         "cmd9\r": [["some response1\r>", {"another_column": 42}], "some response2\r>"],
-...     }
-... ]
->>> canned_queries = CannedQueries(data)
->>> canned_queries.serial_df
+>>> command_readers = {
+...     "CannedQueries": {
+...         "data": [
+...             {
+...                 "cmd1\r": "some response\r>",
+...                 "cmd2\r": {"response": "some response\r"},
+...                 "cmd3\r": {"response": "some response\r>", "another_column": 1},
+...                 "cmd4\r": {"response": ["some response1\r>", "some response2\r>"]},
+...                 "cmd5\r": {"response": ["some response1\r>", "some response2\r>"], "another_column": 1},
+...                 "cmd6\r": {"response": ["some response1\r>", "some response2\r>"], "another_column": [1, 2]},
+...                 "cmd7\r": {"response": [["some response1\r>", {"another_column": 42}], "some response2\r>"]},
+...                 "cmd8\r": {
+...                     "response": [["some response1\r>", {"another_column": 42}], "some response2\r>"],
+...                     "another_column": 1,
+...                 },
+...                 "cmd9\r": [["some response1\r>", {"another_column": 42}], "some response2\r>"],
+...             }
+...         ]
+...     },
+... }
+>>> cereal = Cereal(command_readers=command_readers)
+
+We sort the values because in Python 3.5, dictionary order is not guaranteed, so for predictable output for doctest
+we need to sort it. It has no impact on the behavior if you use regular dictionaries or OrderedDict in Python 3.5
+because we don't rely on the order of the dictionary between different commands.
+
+>>> cereal._readers_["CannedQueries"].serial_df.sort_values(by="cmd")
        cmd           response  another_column
 0   cmd1\r   some response\r>             NaN
 1   cmd2\r    some response\r             NaN
@@ -126,22 +135,27 @@ Just as any normal python list is ordered (20\r comes before 22\r).
 
 Notice also that we also can map just a single response to ``test -off\r`` with this more verbose form
 
->>> data = [{"get -temp\r": {"response": ["20\r>", "22\r>"]}, "test -off\r": {"response": "OK\r>"}}]
->>> canned_queries = CannedQueries(data)
->>> canned_queries.serial_df
+>>> command_readers = {
+...     "CannedQueries": {"data": [{"test -off\r": "OK\r>", "get -sn\r": "1234|r>"}]},
+... }
+>>> cereal = Cereal(command_readers=command_readers)
+>>> cereal._readers_["CannedQueries"].serial_df.sort_values(by="cmd")
            cmd response
-0  get -temp\r    20\r>
-1  get -temp\r    22\r>
-2  test -off\r    OK\r>
+1    get -sn\r  1234|r>
+0  test -off\r    OK\r>
 
 Here we look at how to pass additional columns to our constructed DataFrame
 
->>> data = [{"get -temp\r": {"response": ["20\r>", "22\r>"]}, "test -volt\r": ["5000\r>", "6000\r>"]}]
->>> delay = 2
->>> other_column = [1, 2, 3, 4]
->>> canned_queries = CannedQueries(data, delay=delay, other_column=other_column)
->>> canned_queries.serial_df
-cmd response  delay  other_column
+>>> command_readers = {
+...     "CannedQueries": {
+...         "data": [{"get -temp\r": {"response": ["20\r>", "22\r>"]}, "test -volt\r": ["5000\r>", "6000\r>"]}],
+...         "delay": 2,
+...         "other_column": [1, 2, 3, 4]
+...     },
+... }
+>>> cereal = Cereal(command_readers=command_readers)
+>>> cereal._readers_["CannedQueries"].serial_df.sort_values(by="cmd")
+            cmd response  delay  other_column
 0   get -temp\r    20\r>      2             1
 1   get -temp\r    22\r>      2             2
 2  test -volt\r  5000\r>      2             3
@@ -155,26 +169,31 @@ response, so it does not allow that.)
 We can also pass multiple response directly as a list, without having to embed it in a
 dictionary.
 
-Finally, we will look at 2 ways to specify extra fields on individual rows.
+Finally, we will look at 2 ways to specify extra fields on individual rows. We also look how we can pass
+CannedQueries as the actual class instead of a string
 
->>> data = [
-...     {
-...         "get -temp\r": {
-...             "response": ["20\r>", "22\r>"],
-...             "delay": [7, 6],
-...         },
-...         "test -volt\r": {"response": ["5000\r>", ["6000\r>", {"delay": 5}], "5000\r>"], "delay": 4},
-...         "test -off\r": {"response": "OK\r>", "delay": 3},
-...         "get -sn\r": "1234|r>",
-...     }
-... ]
->>> canned_queries = CannedQueries(data)
->>> canned_queries.serial_df
+>>> command_readers = {
+...     CannedQueries: {
+...         "data": [
+...             {
+...                 "get -temp\r": {
+...                     "response": ["20\r>", "22\r>"],
+...                     "delay": [7, 6],
+...                 },
+...                 "test -volt\r": {"response": ["5000\r>", ["6000\r>", {"delay": 5}], "5000\r>"], "delay": 4},
+...                 "test -off\r": {"response": "OK\r>", "delay": 3},
+...                 "get -sn\r": "1234|r>",
+...             }
+...         ],
+...     },
+... }
+>>> cereal = Cereal(command_readers=command_readers)
+>>> cereal._readers_["CannedQueries"].serial_df.sort_values(by="cmd")
             cmd response  delay
+6     get -sn\r  1234|r>    NaN
 0   get -temp\r    20\r>    7.0
 1   get -temp\r    22\r>    6.0
+5   test -off\r    OK\r>    3.0
 2  test -volt\r  5000\r>    4.0
 3  test -volt\r  6000\r>    5.0
 4  test -volt\r  5000\r>    4.0
-5   test -off\r    OK\r>    3.0
-6     get -sn\r  1234|r>    NaN
