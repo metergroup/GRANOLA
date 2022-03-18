@@ -2,14 +2,19 @@
 profile = "black"
 multi_line_output = 3
 py_version = 39
+skip = ["versioneer.py", "granola/_version.py"]
+skip_glob = ["*env*/*"]
+
 
 [tool.black]
 line-length = 120
+experimental-string-processing=true
 target-version = ['py27']
 # This is a regular expression (hence the \. is escaping the ., and not a literal \.)
 exclude = '''
 (
-    /(versioneer\.py|\.git
+    /(versioneer\.py
+    | \.git
     | \.hg
     | \.mypy_cache
     | \.tox
@@ -24,3 +29,9 @@ exclude = '''
     | versioneer.py
 )
 '''
+
+[tool.pytest.ini_options]
+testpaths = "granola docs"
+addopts = "--doctest-modules --doctest-glob='*.rst'"
+doctest_optionflags = "NORMALIZE_WHITESPACE"
+norecursedirs = "_build"

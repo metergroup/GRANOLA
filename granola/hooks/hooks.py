@@ -65,9 +65,9 @@ class ApproachHook(BaseHook):
             data (str): Serial command
         """
         regex_match, response = hooked._get_matching_setter(data)
-        if not response:
-            return
-        self._process_setter_approach_hook_helper(hooked, regex_match, hooked.attribute_vals)
+        if response:
+            self._process_setter_approach_hook_helper(hooked, regex_match, hooked.attribute_vals)
+        return data
 
     def post_reading(self, hooked, result, data, **kwargs):
         """
@@ -129,7 +129,7 @@ class ApproachHook(BaseHook):
             float(hooked.instrument_attributes[attribute].value)
         except ValueError:
             raise ValueError(
-                "ApproachHook can only be applied with a float attribute." "\nproblem attribute: %s" % attribute
+                "ApproachHook can only be applied with a float attribute.\nproblem attribute: %s" % attribute
             )
 
 

@@ -22,7 +22,7 @@ def test_loop_hook_should_loop_included_queries_only():
     # Given a mock serial with loop hook to loop over get batt\r
     loop_hook = LoopCannedQueries(attributes={"get batt\r"}, include_or_exclude="include")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[loop_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[loop_hook])
 
     # When we query a command not in our looping commands that is only entered once,
     bk_cereal.write(b"start\r")
@@ -53,7 +53,7 @@ def test_loop_hook_should_not_loop_excluded_queries():
     # Given a mock serial with loop hook to not loop over get batt\r, but no other excluded queries
     loop_hook = LoopCannedQueries(attributes={"get batt\r"}, include_or_exclude="exclude")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[loop_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[loop_hook])
 
     # When we query a our excluded response
     bk_cereal.write(b"get batt\r")
@@ -84,7 +84,7 @@ def test_loop_hook_with_no_commands_included_should_return_unsupported_after_loo
     # Given a mock serial with loop hook to include no commands
     loop_hook = LoopCannedQueries(attributes=set(), include_or_exclude="include")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[loop_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[loop_hook])
 
     # When we query any command
     bk_cereal.write(b"get batt\r")
@@ -109,7 +109,7 @@ def test_loop_hook_with_cmd_that_is_excluded_should_log_a_warning_msg(caplog):
     # Given a mock serial with loop hook to not loop over get batt\r, but no other excluded queries
     loop_hook = LoopCannedQueries(attributes={"get batt\r"}, include_or_exclude="exclude")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[loop_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[loop_hook])
 
     # When we query a our excluded response past the generator
     for _ in range(10):
@@ -125,7 +125,7 @@ def test_stick_hook_should_stick_on_command_after_the_generator_expires():
     # Given a mock serial with the stick hook to stick on adc30 3\r after the generator expires
     stick_hook = StickCannedQueries(attributes={"scan adc30 3\r"}, include_or_exclude="include")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[stick_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[stick_hook])
 
     # When we query it enough to ensure it has exhausted the generator
     for _ in range(50):
@@ -145,7 +145,7 @@ def test_approach_hook_should_set_a_greater_value_and_subsequent_gets_should_inc
     # Given a mock serial with the approach hook defined for temp attribute
     approach_hook = ApproachHook(attributes={"temp"}, include_or_exclude="include")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
 
     # When we set the temperature higher
     query_device(bk_cereal, "set -temp 25")
@@ -164,7 +164,7 @@ def test_approach_hook_should_not_impact_attributes_not_specified():
     # Given a mock serial with the approach hook defined for temp attribute
     approach_hook = ApproachHook(attributes={"temp"}, include_or_exclude="include")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
 
     # When we set the sn
     query_device(bk_cereal, "set -sn 123456789")
@@ -187,7 +187,7 @@ def test_approach_hook_should_reach_a_certain_value():
         attributes={"temp"}, include_or_exclude="include", transition_asc_scaling=time_for_1_degree
     )
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
 
     # When we set the temperature 1 degree higher
     degree_pls_1 = float(query_device(bk_cereal, "get -temp")[:-2]) + 1
@@ -206,7 +206,7 @@ def test_approach_hook_should_throw_ValueError_if_you_use_it_on_a_non_numeric_at
     # Given a mock serial with the approach hook defined for sn attribute
     approach_hook = ApproachHook(attributes={"sn"}, include_or_exclude="include")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
 
     # When we set the sn, which is a query in the approach hook
     with pytest.raises(ValueError):
@@ -218,7 +218,7 @@ def test_approach_hook_should_not_work_for_if_you_exclude_a_query():
     # Given a mock serial with the approach hook defined to exclude temp
     approach_hook = ApproachHook(attributes={"temp"}, include_or_exclude="exclude")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
 
     # When we set the temperature higher (instantly since it is excluding temp)
     query_device(bk_cereal, "set -temp 25")
@@ -236,7 +236,7 @@ def test_approach_hook_should_work_for_if_you_use_a_attribute_not_excluded():
     # Given a mock serial with the approach hook defined to exclude temp
     approach_hook = ApproachHook(attributes={"sn"}, include_or_exclude="exclude")
 
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[approach_hook])
 
     # When we set the temperature higher (not instantly since it is doesn't exclude temp)
     query_device(bk_cereal, "set -temp 25")
@@ -262,9 +262,9 @@ def test_a_func_registered_as_a_hook_can_have_the_first_arg_as_self_or_not_and_a
         return "2"
 
     # when we initialize 2 different mock serials, one with the first hook and one with the second
-    bk_cereal1 = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[hook1])
+    bk_cereal1 = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[hook1])
 
-    bk_cereal2 = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH, hooks=[hook2])
+    bk_cereal2 = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH, hooks=[hook2])
 
     # and we query anything from the devices
     response1 = query_device(bk_cereal1, "any command")
@@ -277,7 +277,7 @@ def test_a_func_registered_as_a_hook_can_have_the_first_arg_as_self_or_not_and_a
 
 def test_getter_setter_response_can_be_templated():
     # Given a mock serial with getters and setters defined for temp attribute, and set temp returning temp
-    bk_cereal = Cereal.mock_from_file("cereal", config_path=CONFIG_PATH)
+    bk_cereal = Cereal.mock_from_json("cereal", config_path=CONFIG_PATH)
     volts = 3000
     temp = 100
 

@@ -25,9 +25,7 @@ def validate_enum(value, enum):
         value (Enum or enum key)
         enum: the enum to validate against
     """
-    error = ValueError(
-        "Invalid Enum Option" "\nEnum -- %s" "\nOption supplied -- %s" % (enum.str_enum_options(), value)
-    )
+    error = ValueError("Invalid Enum Option\nEnum -- %s\nOption supplied -- %s" % (enum.str_enum_options(), value))
     if isinstance(value, Enum):
         if value not in enum:
             raise error
@@ -36,6 +34,21 @@ def validate_enum(value, enum):
 
 
 class DocumentedEnum(Enum):
+    """
+    Enum Base class to inherit from that replaces the value option with a description option.
+
+    Examples:
+        >>> class HookTypes(DocumentedEnum):
+        ...     pre_reading = "Hook to run before `get_reading` methods"
+        ...     post_reading = "Hook to run after `get_reading` methods"
+
+        >>> HookTypes.pre_reading.name
+        'pre_reading'
+
+        >>> HookTypes.post_reading.description
+        'Hook to run after `get_reading` methods'
+    """
+
     def __init__(self, description):
         self.description = description
 
@@ -47,6 +60,17 @@ class DocumentedEnum(Enum):
             "Option: {name} -- Description: {doc}".format(name=enum.name, doc=enum.description) for enum in cls
         )
         return string
+
+
+class RandomizeResponse(DocumentedEnum):
+    """
+    The different ways to specify to randomize or not randomize your
+    :class:`~granola.command_readers.CannedQueries` response
+    """
+
+    not_randomized = "Don't randomize the response"
+    randomized_w_replacement = "Randomize with replacement"
+    randomize_and_remove = "Randomize and remove"
 
 
 class HookTypes(DocumentedEnum):

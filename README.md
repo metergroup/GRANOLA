@@ -1,7 +1,7 @@
 # Welcome to GRANOLA's documentation!
 
 
-GRANOLA (Generating Real-time Autonomous N-device Output without Linked Apparatuses) is a package aiming to mock pyserial's Serial
+GRANOLA (Generating Real-time Autonomous N-device Output without Linked Apparatuses) is a package aiming to mock [Pyserial](https://pyserial.readthedocs.io/en/latest/)'s Serial
 class with the goal of enabling automated testing, faster QA, and faster delivery. The core of this package is the class
 Cereal. Cereal allows you to define complicated command and response sequences, getters and setters for commands that set attributes
 on your device (such as the serial number), a hook system to inject your own needed functionality, and a Serial Sniffer to capture serial
@@ -28,12 +28,7 @@ TODO (madeline) fill in with link to readthedocs later
 ``` python
 >>> from granola import Cereal
 
->>> config = {
-...     "canned_queries": {
-...         "data": {
-...             "`DEFAULT`": {"1\r": "1",
-...                           "2\r": ["2a", "2b"]}
-...         }}}
+>>> config = {"command_readers":{"CannedQueries": {"data": [{"1\r": "1", "2\r": ["2a", "2b"]}]}}}
 ... mock_cereal = Cereal(config)
 
 >>> mock_cereal.write(b"2\r")
@@ -45,3 +40,7 @@ b'2a'
 >>> mock_cereal.read(10)
 b'1'
 ```
+
+### More Examples
+
+TODO put link to examples docs stuff

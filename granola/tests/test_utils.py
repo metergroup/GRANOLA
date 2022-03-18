@@ -3,7 +3,7 @@ import shutil
 
 import pytest
 
-from granola.utils import IS_PYTHON3, fixpath, get_path
+from granola.utils import IS_PYTHON3, fixpath, get_path, make_path
 
 if IS_PYTHON3:
     from unittest.mock import patch
@@ -37,19 +37,21 @@ def test_using_get_path_with_just_a_file_should_return_absolute_path_to_root_to_
     assert true_path == path
 
 
-def test_using_get_path_with_directories_that_dont_exist_should_create_those_directories():
+def test_using_make_path_with_directories_that_dont_exist_should_create_those_directories():
     # Given a path to a file name
     path_to_file = os.path.join("Toby", "Tali", "test.csv")
 
-    # When we call `get_path` on it
-    path = get_path(path_to_file)
+    # When we call `make_path` on it
+    make_path(path_to_file)
 
-    # Then it should have created the directories Toby and Tali
-    dir_name = os.path.dirname(path)
-    assert os.path.isdir(dir_name)
+    try:
+        # Then it should have created the directories Toby and Tali
+        dir_name = os.path.dirname(path_to_file)
+        assert os.path.isdir(dir_name)
 
-    # cleanup by removing created directories
-    shutil.rmtree("Toby")
+    finally:
+        # cleanup by removing created directories
+        shutil.rmtree("Toby")
 
 
 @pytest.mark.parametrize("path", PATHS_TO_TEST)

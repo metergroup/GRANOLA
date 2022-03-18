@@ -7,7 +7,6 @@ repos:
       - id: black
         language_version: python3.7
         stages: [commit]
-        args: [--py36-plus]
   - repo: https://github.com/PyCQA/isort
     rev: 5.10.0
     hooks:

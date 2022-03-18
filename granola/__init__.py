@@ -1,8 +1,8 @@
 from granola._version import get_versions
 from granola.breakfast_cereal import Cereal, PortNotOpenError
 from granola.command_readers import (
+    BaseCommandReaders,
     CannedQueries,
-    DefaultDF,
     GettersAndSetters,
     RandomizeResponse,
     SerialCmds,
@@ -15,6 +15,7 @@ from granola.hooks.hooks import (
     StickCannedQueries,
     register_hook,
 )
+from granola.main import MockSerial  # deprecated
 from granola.serial_sniffer import SerialSniffer
 
 __version__ = get_versions()["version"]
@@ -24,9 +25,10 @@ del get_versions
 __all__ = [
     "__version__",
     "RandomizeResponse",
+    "BaseCommandReaders",
     "SerialCmds",
     "Cereal",
-    "DefaultDF",
+    "MockSerial",  # deprecated
     "PortNotOpenError",
     "GettersAndSetters",
     "CannedQueries",

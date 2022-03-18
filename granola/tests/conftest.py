@@ -1,6 +1,5 @@
 import functools
 import os
-import warnings
 
 import pytest
 
@@ -14,6 +13,7 @@ else:
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 CONFIG_PATH = os.path.join(current_dir, "config.json")
+CONFIG_PATH_DEPRECATIONS = os.path.join(current_dir, "config_deprecations.json")
 
 
 def assert_filled_all(mask):
@@ -26,8 +26,19 @@ def assert_filled_any(mask):
     assert mask.any()
 
 
-def query_device(bk_cereal, cmd):
-    bk_cereal.write(("{cmd}\r".format(cmd=cmd)).encode(bk_cereal._encoding))
+def all_equal(iterator):
+    iterator = iter(iterator)
+    try:
+        first = next(iterator)
+    except StopIteration:
+        return True
+    return all(first == x for x in iterator)
+
+
+def query_device(bk_cereal, cmd, write_terminator="\r"):
+    bk_cereal.write(
+        ("{cmd}{write_terminator}".format(cmd=cmd, write_terminator=write_terminator)).encode(bk_cereal._encoding)
+    )
     return bk_cereal.read(1000)
 
 
@@ -42,10 +53,10 @@ def check_deprecation(*msgs):
 
         @functools.wraps(func)
         def _inner(*args, **kwargs):
-            with warnings.catch_warnings(record=True) as w:
+            with pytest.deprecated_call() as dep:
                 r = func(*args, **kwargs)
-                assert issubclass(w[-1].category, Warning)
-                assert msg in str(w[-1].message).lower()
+                assert issubclass(dep.list[-1].category, Warning)
+                assert msg in str(dep.list[-1].message).lower()
             return r
 
         return _inner
@@ -54,11 +65,11 @@ def check_deprecation(*msgs):
         def _check_deprecation(func):
             @functools.wraps(func)
             def _inner(*args, **kwargs):
-                with warnings.catch_warnings(record=True) as w:
+                with pytest.deprecated_call() as dep:
                     r = func(*args, **kwargs)
                     found_warning = False
                     for msg in msgs:
-                        for warning in w:
+                        for warning in dep.list:
                             if issubclass(warning.category, Warning) and msg.lower() in str(warning.message).lower():
                                 found_warning = True
                                 break
@@ -76,12 +87,12 @@ class SerialSnifferTester(SerialSniffer):
 
 @pytest.fixture
 def mock_cereal():
-    return Cereal.mock_from_file("cereal", config_path=CONFIG_PATH)()
+    return Cereal.mock_from_json("cereal", config_path=CONFIG_PATH)()
 
 
 @pytest.fixture
 def bk_cereal_only_getters_and_setters():
-    return Cereal.mock_from_file("just_getters_and_setters", config_path=CONFIG_PATH)()
+    return Cereal.mock_from_json("just_getters_and_setters", config_path=CONFIG_PATH)()
 
 
 @pytest.fixture
@@ -104,11 +115,11 @@ def mock_read():
 
 
 @pytest.fixture
-def canned_queries_config():
-    canned_queries = {
-        "canned_queries": {
-            "data": {
-                "`DEFAULT`": {
+def canned_queries_command_readers():
+    command_readers = {
+        "CannedQueries": {
+            "data": [
+                {
                     "1\r": "1",
                     "2\r": {"response": "2"},
                     "3\r": {"response": "3", "delay": 3},
@@ -119,8 +130,8 @@ def canned_queries_config():
                     "8\r": {"response": [["8a", {"delay": 8.1}], "8b"], "delay": 8},
                     "9\r": [["9a", {"delay": 9}], "9b"],
                 }
-            },
+            ],
             "delay": 0,
         }
     }
-    return canned_queries
+    return command_readers

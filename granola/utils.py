@@ -131,19 +131,22 @@ def check_min_package_version(package, minimum_version, should_trunc_to_same_len
 
 def get_path(path):
     """
-    Helper function that if you pass in a path to a file, returns the absolute path.
-    If the directory to that path does not exist, then it makes all the directories needed.
+    Helper function that if you pass in a path to a file or directory, returns the absolute path.
 
     Args:
-        path (str): path to file
+        path (str): relative or absolute path to file or directory
 
     Returns:
-        str: absolute path to file
+        str: absolute path to file or directory
     """
-    dir_name = os.path.dirname(path)
-    if dir_name and not os.path.isdir(dir_name):  # TODO (madeline) make the makedirs into its own function?
-        os.makedirs(dir_name)
     return os.path.abspath(path)
+
+
+def make_path(path):
+    """Make a path if the path does not already exist"""
+    dir_name = os.path.dirname(path)
+    if dir_name and not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
 
 
 def int_to_char(int_):
@@ -169,9 +172,12 @@ def is_terminated_with(input, terminator):
 
 
 def _get_subclasses(cls):
+    """Get subclasses of passed in class and return a dictionary of them"""
     return {subclass.__name__: subclass for subclass in cls.__subclasses__()}
 
 
-def deprecation(message):
+def deprecation(message, version_to_remove=None):
     warnings.simplefilter("always", DeprecationWarning)
+    if version_to_remove:
+        message += "\nScheduled to be removed on version {version}".format(version=version_to_remove)
     warnings.warn(message, DeprecationWarning)

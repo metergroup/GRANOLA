@@ -1,171 +1,181 @@
 {
     "cereal": {
         "unsupported_response": "ERROR\r>",
-
-        "canned_queries": { "data": {
-            "`DEFAULT`": "data/cereal_cmds.csv",
-            "sdicmd 1 get-measurement": "data\\sensor_get_reading_cmds.csv",
-            "sdicmd 1": "data\\sensor_cmds.csv"
-            }},
-        "getters_and_setters": {
-            "default_values": {
-                "devtype": "Cereal",
-                "sn": "42",
-                "fw_ver":"0.0.0",
-                "temp": "20.0",
-                "volts": "2000.0"
+        "command_readers": {
+            "GettersAndSetters": {
+                "default_values": {
+                    "devtype": "Cereal",
+                    "sn": "42",
+                    "fw_ver":"0.0.0",
+                    "temp": "20.0",
+                    "volts": "2000.0"
+                },
+                "getters": [
+                    {
+                        "cmd": "get -sn\r",
+                        "response": "{{ sn }}\r>"
+                    },
+                    {
+                        "cmd": "get ver\r",
+                        "response": "{{ fw_ver }}\r>"
+                    },
+                    {
+                        "cmd": "show\r",
+                        "response": "{{ devtype }} {{ fw_ver }} {{ sn }}\r>"
+                    },
+                    {
+                        "cmd": "get -temp\r",
+                        "response": "{{ temp }}\r>"
+                    },
+                    {
+                        "cmd": "get -tempf\r",
+                        "response": "{{ temp|float * (9/5) + 32 }}\r>"
+                    },
+                    {
+                        "cmd": "get volt_temp\r",
+                        "response": "{{ (temp|float + volts|float) / 2 }}"
+                    }
+                ],
+                "setters": [
+                    {
+                        "cmd": "set -sn {{sn}}\r",
+                        "response": "OK\r>"
+                    },
+                    {
+                        "cmd": "set -some dummy command {{ sn }} {{ fw_ver }}\r",
+                        "response": "OK\r>"
+                    },
+                    {
+                        "cmd": "set -temp {{ temp }}\r",
+                        "response": "{{ temp }}"
+                    },
+                    {
+                        "cmd": "set volt {{ volts }}\r",
+                        "response": "Volt Calculation {{ volts|float / 2 }}"
+                    }
+                ]
             },
-            "getters": [
+            "CannedQueries": { "data": [
+                "data/cereal_cmds.csv",
+                "data\\sensor_get_reading_cmds.csv",
+                "data\\sensor_cmds.csv",
                 {
-                    "cmd": "get -sn\r",
-                    "response": "{{ sn }}\r>"
-                },
-                {
-                    "cmd": "get ver\r",
-                    "response": "{{ fw_ver }}\r>"
-                },
-                {
-                    "cmd": "show\r",
-                    "response": "{{ devtype }} {{ fw_ver }} {{ sn }}\r>"
-                },
-                {
-                    "cmd": "get -temp\r",
-                    "response": "{{ temp }}\r>"
-                },
-                {
-                    "cmd": "get -tempf\r",
-                    "response": "{{ temp|float * (9/5) + 32 }}\r>"
-                },
-                {
-                    "cmd": "get volt_temp\r",
-                    "response": "{{ (temp|float + volts|float) / 2 }}"
+                    "1\r": "1",
+                    "2\r": {"response": "2"},
+                    "3\r": {"response": "3", "delay": 3},
+                    "4\r": {"response": ["4a", "4b"]},
+                    "5\r": {"response": ["5a", "5b"], "delay": 5},
+                    "6\r": {"response": ["6a", "6b"], "delay": [6.1, 6.2]},
+                    "7\r": {"response": [["7a", {"delay": 7}], "7b"]},
+                    "8\r": {"response": [["8a", {"delay": 8.1}], "8b"], "delay": 8},
+                    "9\r": [["9a", {"delay": 9}], "9b"]
                 }
-            ],
-            "setters": [
-                {
-                    "cmd": "set -sn {{sn}}\r",
-                    "response": "OK\r>"
-                },
-                {
-                    "cmd": "set -some dummy command {{ sn }} {{ fw_ver }}\r",
-                    "response": "OK\r>"
-                },
-                {
-                    "cmd": "set -temp {{ temp }}\r",
-                    "response": "{{ temp }}"
-                },
-                {
-                    "cmd": "set volt {{ volts }}\r",
-                    "response": "Volt Calculation {{ volts|float / 2 }}"
-                }
-            ]
+            ]}
         }
     },
 
     "just_getters_and_setters": {
-
-        "getters_and_setters": {
-            "default_values": {
-                "sn": "42",
-                "fw_ver":"123"
-            },
-            "getters": [
-                {
-                    "cmd": "get -sn\r",
-                    "response": "`sn`\r>"
+        "command_readers": {
+            "GettersAndSetters": {
+                "default_values": {
+                    "sn": "42",
+                    "fw_ver":"123"
                 },
-                {
-                    "cmd": "show\r",
-                    "response": "SOMEMACHINE `fw_ver` `sn`\r>"
-                }
-            ],
-            "setters": [
-                {
-                    "cmd": "set -sn `sn`\r",
-                    "response": "OK\r>"
-                }
-            ],
-            "variable_start_string": "`",
-            "variable_end_string": "`"
+                "getters": [
+                    {
+                        "cmd": "get -sn\r",
+                        "response": "`sn`\r>"
+                    },
+                    {
+                        "cmd": "show\r",
+                        "response": "SOMEMACHINE `fw_ver` `sn`\r>"
+                    }
+                ],
+                "setters": [
+                    {
+                        "cmd": "set -sn `sn`\r",
+                        "response": "OK\r>"
+                    }
+                ],
+                "variable_start_string": "`",
+                "variable_end_string": "`"
+            }
         }
     },
 
     "incorrect_getter": {
-        "canned_queries": {"data": {"`DEFAULT`": "data/cereal_cmds.csv"}},
-        "getters_and_setters": {
-            "default_values": {
-                "sn": "42"
-            },
-            "getters": [
-                {
-                    "cmd": "get -sn\r",
-                    "response": "{{ INCORRECT }}"
-                }
-            ]
+        "command_readers":{
+            "CannedQueries": {"data": [{"1\r": "1", "2\r": {"response": "3", "delay": 3}}]},
+            "GettersAndSetters": {
+                "default_values": {
+                    "sn": "42"
+                },
+                "getters": [
+                    {
+                        "cmd": "get -sn\r",
+                        "response": "{{ INCORRECT }}"
+                    }
+                ]
+            }
         }
     },
 
     "incorrect_setter": {
-        "canned_queries": {"data": {"`DEFAULT`": "data/cereal_cmds.csv"}},
-        "getters_and_setters": {
-            "default_values": {
-                "sn": "42"
-            },
-            "setters": [
-                {
-                    "cmd": "set -sn {{ INCORRECT }}\r",
-                    "response": "OK\r>"
-                }
-            ]
+        "command_readers":{
+            "CannedQueries": {"data": [{"1\r": "1", "2\r": {"response": "3", "delay": 3}}]},
+            "GettersAndSetters": {
+                "default_values": {
+                    "sn": "42"
+                },
+                "setters": [
+                    {
+                        "cmd": "set -sn {{ INCORRECT }}\r",
+                        "response": "OK\r>"
+                    }
+                ]
+            }
         }
     },
 
     "stick_hook": {
-        "canned_queries": {
-            "data": {
-                "`DEFAULT`": "data/cereal_cmds.csv",
-                "sdicmd 1 get-measurement": "data\\sensor_get_reading_cmds.csv",
-                "sdicmd 1": "data\\sensor_cmds.csv"
-            }
+        "command_readers":{
+            "CannedQueries": {"data": [{"1\n": "1", "2\n": {"response": "3", "delay": 3}}]}
         },
-        "hooks": [
-            {
-                "hook_type": "StickCannedQueries",
-                "attributes": ["get -volt\r"],
+        "hooks": {
+            "StickCannedQueries": {
+                "attributes": ["2\n"],
                 "include_or_exclude": "exclude"
             }
-        ]
+        },
+        "write_terminator": "\n"
     },
 
     "command_readers": {
-        "canned_queries": {
-            "data": {
-                "`DEFAULT`": "data/cereal_cmds.csv",
-                "sdicmd 1 get-measurement": "data\\sensor_get_reading_cmds.csv",
-                "sdicmd 1": "data\\sensor_cmds.csv"
-            }
-        },
-        "command_readers": [
-            {
-                "reader_type": "CannedQueries"
-            }
-        ]
+        "command_readers": {
+            "CannedQueries": {"data": ["data/cereal_cmds.csv"]}
+        }
     },
 
     "dictionary": {
-        "canned_queries": {
-            "data": {
-                "`DEFAULT`": {"get -temp\r": {"response": ["20\r>",
-                                                           "22\r>"]},
-                              "get -sn\r": "sn1234\r>",
-                              "test -off\r": {"response": "OK\r>"}}}
+        "command_readers":{
+            "CannedQueries": {
+                "data": [
+                    {"get -temp\r": {"response": ["20\r>",
+                                                  "22\r>"]},
+                     "get -sn\r": "sn1234\r>",
+                     "test -off\r": {"response": "OK\r>"}}
+                ]
+            }
         }
     },
-    "incorrect_jinja_template_for_deprecation": {
-        "getters_and_setters": {
-            "default_values": {"sn": "42"},
-            "getters": [{"cmd": "get -sn\r",
-                         "response": "`sn`\r>"}]
+
+    "incorrect_jinja_template_for_deprecation2": {
+        "command_readers":{
+            "GettersAndSetters": {
+                "default_values": {"sn": "42"},
+                "getters": [{"cmd": "get -sn\r",
+                            "response": "`sn`\r>"}]
+            }
         }
     }
 }
