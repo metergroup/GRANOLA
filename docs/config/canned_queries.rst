@@ -73,7 +73,11 @@ against.
 The specific formats you must follow can be seen with the :py:class:`~granola.command_readers.CannedQueries` Command Reader.
 This is a quick overview of all the options for inside the serial commands dictionary.
 
-
+>>> import sys, pytest
+>>> is_python_35 = sys.version_info[0] == 3 and sys.version_info[1] == 5
+>>> if is_python_35:
+...     pytest.skip("This doctest doesn't work with Python 3.5 because dictionary ordering is not guaranteed."
+...                 " All of the behavior is the same, just the underlying pandas DataFrame order will be different")
 >>> from granola import CannedQueries, Cereal
 
 >>> command_readers = {
@@ -97,12 +101,7 @@ This is a quick overview of all the options for inside the serial commands dicti
 ...     },
 ... }
 >>> cereal = Cereal(command_readers=command_readers)
-
-We sort the values because in Python 3.5, dictionary order is not guaranteed, so for predictable output for doctest
-we need to sort it. It has no impact on the behavior if you use regular dictionaries or OrderedDict in Python 3.5
-because we don't rely on the order of the dictionary between different commands.
-
->>> cereal._readers_["CannedQueries"].serial_df.sort_values(by="cmd")
+>>> cereal._readers_["CannedQueries"].serial_df
        cmd           response  another_column
 0   cmd1\r   some response\r>             NaN
 1   cmd2\r    some response\r             NaN
@@ -123,9 +122,11 @@ because we don't rely on the order of the dictionary between different commands.
 This can be expressed either in the JSON configuration or directly in python. Let's step through those options.
 Generate a `SerialCmds` from a dictionary of serial commands. Here is the most basic form, where each command is mapped directly to a single response.
 
->>> data = [{"test -off\r": "OK\r>", "get -sn\r": "1234|r>"}]
->>> canned_queries = CannedQueries(data)
->>> canned_queries.serial_df
+>>> command_readers = {
+...     "CannedQueries": {"data": [{"test -off\r": "OK\r>", "get -sn\r": "1234|r>"}]
+... }}
+>>> cereal = Cereal(command_readers=command_readers)
+>>> cereal._readers_["CannedQueries"].serial_df
            cmd response
 0  test -off\r    OK\r>
 1    get -sn\r  1234|r>
@@ -136,13 +137,14 @@ Just as any normal python list is ordered (20\r comes before 22\r).
 Notice also that we also can map just a single response to ``test -off\r`` with this more verbose form
 
 >>> command_readers = {
-...     "CannedQueries": {"data": [{"test -off\r": "OK\r>", "get -sn\r": "1234|r>"}]},
-... }
+...     "CannedQueries": {"data": [{"get -temp\r": {"response": ["20\r>", "22\r>"]},
+...                                 "test -off\r": {"response": "OK\r>"}}]}}
 >>> cereal = Cereal(command_readers=command_readers)
->>> cereal._readers_["CannedQueries"].serial_df.sort_values(by="cmd")
+>>> cereal._readers_["CannedQueries"].serial_df
            cmd response
-1    get -sn\r  1234|r>
-0  test -off\r    OK\r>
+0  get -temp\r    20\r>
+1  get -temp\r    22\r>
+2  test -off\r    OK\r>
 
 Here we look at how to pass additional columns to our constructed DataFrame
 
