@@ -37,9 +37,10 @@ logger = logging.getLogger(__name__)
 
 class Cereal(Serial):
     r"""
-    Mock pyserial Serial class that is capable of mocking serial commands a responses to
-    for both simple and sophisticated neeeds. Breakfast Cereal allows you to defined
-    simple :class:`~granola.command_readersCannedQueries` that are are predefined
+    Mock :std:doc:`Pyserial's <pyserial:index>` :class:`Serial <pyserial:serial.Serial>` class
+    that is capable of mocking serial commands a responses to for both simple and sophisticated
+    neeeds. Breakfast Cereal allows you to defined simple
+    :class:`~granola.command_readersCannedQueries` that are are predefined
     serial commands and responses for various commands. As well as more complicated
     :class:`~granola.command_readers.GettersAndSetters` which allow on the fly changing
     the state of stored attributes. It also allows customizing the behavior of how
@@ -91,17 +92,92 @@ class Cereal(Serial):
         encoding(str, optional): The encoding scheme used to encode the serial commands and responses
             Defaults to "ascii"
 
-        .. todo::
+    .. todo::
 
-            Allow passing in write terminator
+        Allow passing in write terminator
 
     See Also
     --------
-    :meth:`granola.breakfast_cereal.Cereal.mock_from_json` : Constructor from external configuration file.
+    :meth:`.mock_from_json` : Constructor from external configuration file
 
-    :ref:`Configuration Overview` : Configuration Instructions
+    :meth:`.BaseCommandReaders.get_reading` : Base Command Reader that defines the interface for other Command Readers
+
+    :ref:`Configuration Overview` : Configuration Instructions and
 
     :ref:`Basic Overview of Mock Cereal and API` : Intro Tutorial
+
+    Examples
+    --------
+    Initialize Breakfast Cereal with CannedQueries and GettersAndSetters Command Readers
+
+    >>> command_readers = {
+    ...     "CannedQueries": {"data": [{"1\r": "1", "2\r": ["2a", "2b"]}]},
+    ...     "GettersAndSetters": {
+    ...         "default_values": {"sn": "42"},  # We first initialize a default
+    ...         "getters": [{"cmd": "get sn\r", "response": "{{ sn }}\r>"}],  # we define default
+    ...         "setters": [{"cmd": "set sn {{ sn }}\r", "response": "OK\r>"}],  # and we define a setter
+    ...     },
+    ... }
+    >>> cereal = Cereal(command_readers=command_readers)
+
+    CannedQueries returns the correct response and by default it loops when it reaches the end of the defined responses
+
+    >>> cereal.write(b"2\r")
+    2
+    >>> cereal.read(cereal.in_waiting)
+    b'2a'
+    >>> cereal.write(b"2\r")
+    2
+    >>> cereal.read(cereal.in_waiting)
+    b'2b'
+    >>> cereal.write(b"2\r")
+    2
+    >>> cereal.read(cereal.in_waiting)
+    b'2a'
+
+    Our GettersAndSetters initializes values to the defaults we specified, and then we can set them to new values
+
+    >>> cereal.write(b"get sn\r")
+    7
+    >>> cereal.read(cereal.in_waiting)
+    b'42\r>'
+    >>> cereal.write(b"set sn our fancy new sn\r")  # if we don't read in between commands, it clears the buffer
+    24
+    >>> cereal.write(b"get sn\r")
+    7
+    >>> cereal.read(cereal.in_waiting)
+    b'our fancy new sn\r>'
+
+    If we send a command that is not defined, it sends back an Unsupported response, which is configurable
+
+    >>> cereal.write(b"nonesense\r")
+    10
+    >>> cereal.read(cereal.in_waiting)
+    b'Unsupported\r>'
+
+    We can change the behavior of certain commands by adding :mod:`Hooks <granola.hooks.hooks>`.
+    The :class:`Hooks <granola.hooks.hooks.StickCannedQueries>` causes the last defined response to not loop, but to
+    stick on it and just repeat.
+
+    >>> from granola import StickCannedQueries
+    >>> hooks = {"StickCannedQueries": {"attributes": ["2\r"], "include_or_exclude": "include"}}
+    >>> cereal = Cereal(command_readers=command_readers, hooks=hooks)
+    >>> cereal.write(b"2\r")
+    2
+    >>> cereal.read(cereal.in_waiting)
+    b'2a'
+    >>> cereal.write(b"2\r")
+    2
+    >>> cereal.read(cereal.in_waiting)
+    b'2b'
+    >>> cereal.write(b"2\r")  # You'll notice here that it doesn't loop
+    2
+    >>> cereal.read(cereal.in_waiting)  # It just repeats the last response (it sticks)
+    b'2b'
+    >>> cereal.write(b"2\r")
+    2
+    >>> cereal.read(cereal.in_waiting)
+    b'2b'
     """
 
     @add_created_at
@@ -197,7 +273,7 @@ class Cereal(Serial):
         return "{device}{port}".format(device=self.__class__.__name__, port=port_str)
 
     def read(self, size=1):
-        """Mock pyserial.Serial `read`. Return number of bytes in self._next_read based on `size`"""
+        """Mock :meth:`pyserial:serial.Serial.read`. Return number of bytes in self._next_read based on `size`"""
         read = bytearray()
         if size > 0:
             self._next_read = encode_to_bytes(self._next_read, self._encoding)
@@ -212,7 +288,7 @@ class Cereal(Serial):
 
     def write(self, data):
         """
-        Mock pyserial.Serial `write` by seeding a serial command generator
+        Mock :meth:`pyserial:serial.Serial.write` by seeding a serial command generator
 
         Args:
             data (byte_str): serial command
@@ -421,3 +497,13 @@ by defining your own Command Readers.
 You can further customize the behavior of Command Readers by adding in :mod:`Hook <granola.hooks.hooks>`
 that run a preditermined spots. Also see :ref:`Configuration Overview`.
 """
+
+
+command_readers = {
+    "CannedQueries": {"data": [{"1\r": "1", "2\r": ["2a", "2b"]}]},
+    "GettersAndSetters": {
+        "default_values": {"sn": "42"},  # We first initialize a default
+        "getters": [{"cmd": "get sn\r", "response": "{{ sn }}\r>"}],  # we define default
+        "setters": [{"cmd": "set sn {{ sn }}\r", "response": "OK\r>"}],  # and we define a setter
+    },
+}

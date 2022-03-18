@@ -39,14 +39,11 @@ extensions = [
     "myst_nb",
 ]
 
-jupyter_execute_notebooks = "auto"
-
-doctest_global_setup = """
-import granola
-"""
+jupyter_execute_notebooks = "force"
 
 intersphinx_mapping = {
     "jinja2": ("https://jinja.palletsprojects.com/", None),
+    "pyserial": ("https://pyserial.readthedocs.io/en/latest/", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.

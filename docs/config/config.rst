@@ -43,7 +43,7 @@ Getters And Setters
 Another useful :mod:`Command Reader <granola.command_readers>` is the :class:`~granola.command_readers.GettersAndSetters` Command Reader.
 This Command Reader manages the state of a number of attributes which you can access with getters and set with setters.
 It initializes some default values and stores those values in the attribute. These attributes can then be modified with
-setters, and then grabbed from the getters. Both getters and setters allow configuration with using :std:doc:`Jinja2 <intro>` formatting.
+setters, and then grabbed from the getters. Both getters and setters allow configuration with using :std:doc:`Jinja2 <jinja2:intro>` formatting.
 
 You can see a more in-depth tutorial on :class:`~granola.command_readers.GettersAndSetters` :ref:`here <Getters and Setters Configuration>`.
 

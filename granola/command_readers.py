@@ -203,6 +203,7 @@ class BaseCommandReaders(ABC):
 
     See Also
     --------
+    :class:`.Cereal` : Breakfast Cereal class used for mocking
     :ref:`Command Readers and Hooks Configuration` : Configuration Overview
     :ref:`Basic Overview of Mock Cereal and API` : Intro Tutorial
     """
