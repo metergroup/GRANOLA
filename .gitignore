@@ -24,3 +24,6 @@ docs/_static
 docs/temp
 
 *.egg*
+
+# jupyter stuff
+ipynb_checkpoints/
