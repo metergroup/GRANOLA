@@ -61,9 +61,3 @@ saving information about it for later, modifying it, or any other useful actions
 altering the resulting response, using information from prior state, or other more sophisticated techniques.
 
 For information on creating your own hooks, see :mod:`~granola.hooks.base_hook`
-
-.. todo::
-    Add more in depth guide to Hooks
-
-.. todo::
-    Add the ability for Hooks to be ran directly on Breakfast Cereal

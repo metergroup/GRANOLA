@@ -17,10 +17,7 @@ Running Black the Python code formatter
 =======================================
 """
     )
-    command.run(
-        "black .",
-        echo=True,
-    )
+    command.run("black .", echo=True, pty=True)
 
 
 @task
@@ -34,14 +31,11 @@ Running isort the Python code import sorter
 ===========================================
 """
     )
-    command.run(
-        "isort .",
-        echo=True,
-    )
+    command.run("isort .", echo=True, pty=True)
 
 
 @task
-def flake8(
+def lint(
     command,
 ):
     """Runs flake8 (linter) on all .py files recursively"""
@@ -51,13 +45,10 @@ Running flake8 a Python code linter
 ===================================
 """
     )
-    command.run(
-        "flake8",
-        echo=True,
-    )
+    command.run("flake8", echo=True, pty=True)
 
 
-@task(pre=[black, isort, flake8])
+@task(pre=[black, isort, lint])
 def style(
     command,
 ):
@@ -65,7 +56,7 @@ def style(
     Arguments:
         command {[type]} -- [description]
     """
-    # If we get to this point all tests listed in 'pre' have passed
+    # If we get to this point all tests listed in 'pre' have  passed
     # unless we have run the task with the --warn flag
     if not command.config.run.warn:
         print(
@@ -91,7 +82,22 @@ Running pytest the test framework
     command.run("python -m pytest", echo=True, pty=True)
 
 
-@task(pre=[black, isort, flake8, pytest])
+@task
+def docs(
+    command,
+):
+    """Runs Sphinx to build the docs locally for testing"""
+
+    print(
+        """
+Running Sphinx to test the docs building
+========================================
+"""
+    )
+    command.run("sphinx-build -b html docs docs/_build/html", echo=True, pty=True)
+
+
+@task(pre=[black, isort, flake8, pytest, sphinx])
 def all(
     command,
 ):

@@ -3,10 +3,6 @@ API
 ###
 
 
-.. todo::
-
-    Fill this in
-
 Mock Cereal
 =============
 

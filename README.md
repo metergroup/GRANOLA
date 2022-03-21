@@ -7,21 +7,13 @@ Cereal. Cereal allows you to define complicated command and response sequences, 
 on your device (such as the serial number), a hook system to inject your own needed functionality, and a Serial Sniffer to capture serial
 command output from a real device as the basis of mocking later.
 
-> :warning: ** This project is still in it's beta, pre 1.0 stage with active moving towards its 1.0 release. We try and not break previous interfaces when we move to new, but until it is ready for 1.0, it is still unstable.**
+> :warning: ** This project is still in it's beta, pre 1.0 stage, and we are moving towards our 1.0 release. We try and not break previous interfaces when we move to new, but until it is ready for 1.0, it is still unstable.**
 
 ## Package Installation
 
+To install:
 
-To pull this package down in another project simply:
-
-    TODO (madeline) update with pypi when available
-
-
-## Read the Docs
-
-
-TODO (madeline) fill in with link to readthedocs later
-
+>> TODO: soon to come
 
 ## A Simple Example
 
@@ -41,6 +33,9 @@ b'2a'
 b'1'
 ```
 
-### More Examples
+## Links
 
-TODO put link to examples docs stuff
+- Documentation: https://granola.readthedocs.io/en/stable/
+- Examples: https://granola.readthedocs.io/en/stable/examples/examples_notebooks.html
+- Source Code: https://github.com/metergroup/GRANOLA
+- Issue Tracker: https://github.com/metergroup/GRANOLA/issues

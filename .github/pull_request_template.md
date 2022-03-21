@@ -23,6 +23,6 @@
 
 - [ ] I've read the [`CODE_OF_CONDUCT.md`](https://github.com/metergroup/GRANOLA/blob/main/CODE_OF_CONDUCT.md) document.
 - [ ] I've read the [`CONTRIBUTING.md`]https://github.com/metergroup/GRANOLA/blob/main/CONTRIBUTING.md) guide.
-- [ ] I've updated the code style using `make codestyle`.
 - [ ] I've written tests for all new methods and classes that I created.
 - [ ] I've written the docstring in `Google` format for all the methods and classes that I used.
+- [ ] I've updated the code style using `invoke style`, and checked all my tests with `invoke pytest` or I have ran `invoke all` to accomplish both.
