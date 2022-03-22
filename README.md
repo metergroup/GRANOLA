@@ -1,4 +1,4 @@
-# Welcome to GRANOLA's documentation!
+# GRANOLA
 
 
 GRANOLA (Generating Real-time Autonomous N-device Output without Linked Apparatuses) is a package aiming to mock [Pyserial](https://pyserial.readthedocs.io/en/latest/)'s Serial
@@ -13,7 +13,7 @@ command output from a real device as the basis of mocking later.
 
 To install:
 
->> TODO: soon to come
+``pip install granola``
 
 ## A Simple Example
 
@@ -25,11 +25,11 @@ To install:
 
 >>> mock_cereal.write(b"2\r")
 2
->>> mock_cereal.read(10)
+>>> mock_cereal.read(2)
 b'2a'
 >>> mock_cereal.write(b"1\r")
 2
->>> mock_cereal.read(10)
+>>> mock_cereal.read(1)
 b'1'
 ```
 
@@ -37,5 +37,6 @@ b'1'
 
 - Documentation: https://granola.readthedocs.io/en/stable/
 - Examples: https://granola.readthedocs.io/en/stable/examples/examples_notebooks.html
+- PyPI: https://pypi.org/project/granola/
 - Source Code: https://github.com/metergroup/GRANOLA
 - Issue Tracker: https://github.com/metergroup/GRANOLA/issues
