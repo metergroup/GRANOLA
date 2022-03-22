@@ -1,10 +1,9 @@
 # This workflow will install dependencies, create coverage tests and run Pytest Coverage Commentator
 # For more information see: https://github.com/coroo/pytest-coverage-commentator
 name: pytest-coverage-commentator
-on:
-  pull_request:
-    branches:
-      - '*'
+
+on: push
+
 jobs:
   build:
     runs-on: ubuntu-latest
