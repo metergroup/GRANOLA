@@ -44,7 +44,8 @@
 
 ### Highlights
 
-<!-- Include any especially major or disruptive changes here -->
+- See https://granola.readthedocs.io/en/stable/config/moving_to_v0_9_0.html for more information on migrating from previous versions to 0.9.0
+- Deprecated MockSerial in favor of new Cereal class.
 
 ### Bugfixes
 
@@ -52,29 +53,34 @@
 
 ### Configuration
 
-<!-- Changes to how GRANOLA can be configured -->
+- Added ability to pass any custom Hook or CommandReader into configuration as strings as long as they are defined imported somewhere by the time ``Cereal`` is initialized.
+- Added ability to initialize ``CannedQueries`` with dictionary of serial commands
+instead of file paths, or a mixture of both.
+- Changed many aspects of the configuration syntax
+    - See https://granola.readthedocs.io/en/stable/config/moving_to_v0_9_0.html for more information
 
 ### Depreciation
 
 - Deprecated MockSerial class in favor of [Cereal](https://granola.readthedocs.io/en/stable/bk_cereal.html) class.
 - Deprecated how MockSerial configuration is handled when moving to Cereal.
+    - See https://granola.readthedocs.io/en/stable/config/moving_to_v0_9_0.html for more information on migrating from previous versions to 0.9.0
 
 ### Documentation
 
-<!-- Major changes to documentation and policies. Small docs changes
-     don't need a changelog entry. -->
-
+- Added a readthedocs website at https://granola.readthedocs.io/en/stable/
+- Added API, configuration, and examples to readthedocs
 ### Feature
 
-<!-- New Features added to GRANOLA -->
+- Add a write_terminator parameter that lets you specify your end-of-line character.
 
 ### Packaging
 
-<!-- Changes to how GRANOLA is packaged, such as dependency requirements -->
+- Added black, isort, and invoke to requirements
 
 ### Refactor
 
-<!-- Changes to how GRANOLA code with not changes to behavior -->
+- Reformatted code with black and isort
+    - Added black and isort checks in CI build
 
 ### Removals
 
