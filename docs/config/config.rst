@@ -30,8 +30,8 @@ Canned Queries
 ==============
 
 The most basic :mod:`Command Reader <granola.command_readers>` is the :class:`~granola.command_readers.CannedQueries` Command Reader.
-This Command Reader has you define a series of commands and a responses, and then when a command comes in, it with return
-the next matching response for that command. It will iterate through the subset of matching commands (ex: all "get sn\r"),
+This Command Reader has you define a series of commands and a responses, and then when a command comes in, it will return
+the next matching response for that command. It will iterate through the subset of matching commands (ex: all "get sn\\r"),
 until it reaches the end. There are ways with :ref:`Hooks <What is a Hook?>` to define the behavior of what happens when it
 reaches the end.
 
@@ -53,7 +53,7 @@ You can see a more in-depth tutorial on :class:`~granola.command_readers.Getters
 What is a Hook?
 ****************
 
-A :mod:`Hook <granola.hooks.hooks>` is class that is associated with a :mod:`Command Reader <granola.command_readers>` or set of Command Readers and runs extra code at predefined
+:mod:`Hook <granola.hooks.hooks>` is a class that is associated with a :mod:`Command Reader <granola.command_readers>` or set of Command Readers and runs extra code at a predefined
 location. Before each :mod:`Command Readers's <granola.command_readers>` :meth:`~granola.command_readers.BaseCommandReaders.get_reading`
 method, a Hook can be ran, via :meth:`~granola.hook.base_hook.BaseHook.pre_reading`, processing the incoming data,
 saving information about it for later, modifying it, or any other useful actions. Alternatively, a Hook can run after
