@@ -61,3 +61,12 @@ saving information about it for later, modifying it, or any other useful actions
 altering the resulting response, using information from prior state, or other more sophisticated techniques.
 
 For information on creating your own hooks, see :mod:`~granola.hooks.base_hook`
+
+
+****************************************
+Moving to 0.9.0 from a previous release
+****************************************
+
+.. toctree::
+
+    moving_to_v0_9_0

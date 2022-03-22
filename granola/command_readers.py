@@ -204,7 +204,7 @@ class BaseCommandReaders(ABC):
     See Also
     --------
     :class:`.Cereal` : Breakfast Cereal class used for mocking
-    :ref:`Command Readers and Hooks Configuration` : Configuration Overview
+    :ref:`Custom Command Readers and Hooks Configuration` : Configuration Overview
     :ref:`Basic Overview of Mock Cereal and API` : Intro Tutorial
     """
 
@@ -442,7 +442,7 @@ class CannedQueries(BaseCommandReaders):
     --------
     :ref:`Canned Queries Configuration` for examples on configuration formatting.
 
-    :ref:`Command Readers and Hooks Configuration` : Command Readers and Hook Overviews
+    :ref:`Custom Command Readers and Hooks Configuration` : Command Readers and Hook Overviews
     """
 
     def __init__(self, data=None, data_path_root=None, **kwargs):
@@ -488,7 +488,7 @@ class CannedQueries(BaseCommandReaders):
 
         :ref:`Canned Queries Configuration` for examples on configuration formatting.
 
-        :ref:`Command Readers and Hooks Configuration` : Command Readers and Hook Overviews
+        :ref:`Custom Command Readers and Hooks Configuration` : Command Readers and Hook Overviews
         """
         try:
             if data not in self.serial_generator:

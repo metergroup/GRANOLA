@@ -65,7 +65,7 @@ class Cereal(Serial):
             Using a list allows you to pass in already initialized Command Reader, or a not
             initialized Command Reader that will be initialized to default values.
             You can pass in custom Command Readers as well. See
-            :ref:`Command Readers and Hooks Configuration`.
+            :ref:`Custom Command Readers and Hooks Configuration`.
             defaults to ``(GettersAndSetters(), CannedQueries())``
 
         hooks (dict[BaseHook|str] | list[BaseHook|str], optional):
@@ -75,7 +75,7 @@ class Cereal(Serial):
             Using a list allows you to pass in already initialized Hook, or a not
             initialized Hook that will be initialized to default values.
             You can pass in custom Hooks as well. See
-            :ref:`Command Readers and Hooks Configuration`.
+            :ref:`Custom Command Readers and Hooks Configuration`.
             defaults to ``[]``
 
         data_path_root (str | Path, optional): Path to the where all data file paths (for
