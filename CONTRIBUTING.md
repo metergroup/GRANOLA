@@ -107,4 +107,4 @@ Run `git push origin my_contribution`
 
 On github interface, click on `Pull Request` button.
 
-Wait CI to run and one of the developers will review your PR.
+Wait for CI to run and one of the developers will review your PR.

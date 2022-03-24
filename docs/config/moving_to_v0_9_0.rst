@@ -91,7 +91,7 @@ A newly formatted configuration would look like this:
         }
     }
 
-Taking this apart, piece by piece, first,
+Taking this apart piece by piece, first,
 
 .. code-block::
 
@@ -120,7 +120,7 @@ This is because they now reference the actual Command Reader you are configuring
         }
     }
 
-Next inside ``CannedQueries``, we see that the key ``files`` has changed to ``data``
+Next, inside ``CannedQueries`` we see that the key ``files`` has changed to ``data``
 
 .. code-block::
 
@@ -213,8 +213,8 @@ If need be, you can specify what :std:doc:`Jinja2 <jinja2:intro>` start and end 
         }
     }
 
-With the change to using :std:doc:`Jinja2 <jinja2:intro>` as our templating engine, it has opened up a lot more
-and powerful options for customizing your serial command logic. Such as multiplying different attributes together.
+With the change to using :std:doc:`Jinja2 <jinja2:intro>` as our templating engine, it has opened up many more
+powerful options for customizing your serial command logic. This includes, for example, multiplying different attributes together.
 See :ref:`Getters and Setters Configuration` for more information.
 
 One final thing to note with the changes to using Cereal, all options can now be included with either the configuration

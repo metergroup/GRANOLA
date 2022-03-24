@@ -75,7 +75,7 @@ class SerialCmds(object):
     def add_df_from_dict(self, dic, **kwargs):
         """
         Add a df to data from a dictionary of serial commands. The format for this dictionary
-        can take a few forms. It can either be expressed in a JSON configuration or passed in python
+        can take a few forms. It can either be expressed in a JSON configuration or passed as a python dictionary
         to Cereal. Here is the most basic form, where each command is mapped directly to a single response.
 
         Args:
@@ -185,18 +185,18 @@ class BaseCommandReaders(ABC):
     ``get_reading`` and ``_hooks_`` with a defined ``posthook`` method after after ``get_reading``.
 
     Because "" is a valid serial command response, we use None to signify an unsupported response.
-    We also have a defined SENTINEL object for response that are undefined in other ways.
-    For example, Canned queries (command and response defined from list) by default loop back when
-    they get to the end of the list, but if you exclude a command from that list, and then don't
-    handle it another way, Instead of having undefined behavior, we return a SENTINEL object,
-    which Cereal will treat as an undefined response, but also emit a warnign log message
+    We also have a defined SENTINEL object for responses that are undefined in other ways.
+    For example, Canned Queries (command and response defined from list) by default loop back when
+    they get to the end of the list. However, if you exclude a command from that list, and then don't
+    handle it another way, we return a SENTINEL object instead of having undefined behavior.
+    Cereal will treat this as an undefined response, but also emit a warning log message
     as well.
 
     Args:
         hooks(list[BaseHook], optional): List of Hooks to run on this Command Reader.
             Defaults to `[]`
-        data_path_root(str | Path, optional): Path to the where all data file paths for this command reader
-            (such as defining the serial commands) will be referenced from. Not every Command
+        data_path_root(str | Path, optional): Base path for all data file paths for this command reader
+            (such as defining the serial commands). Not every Command
             Reader, or every way to initialize a certain Command Reader uses data files, so
             this doesn't apply to every Command Reader.
             Defaults to current working directory.
