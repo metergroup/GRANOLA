@@ -39,3 +39,10 @@ General Utilities
 
     Utils <utils>
     Enums <enums>
+
+Deprecations
+====================
+
+.. toctree::
+
+    deprecated_api

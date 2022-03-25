@@ -79,7 +79,7 @@ Running pytest the test framework
 =================================
 """
     )
-    command.run("python -m pytest", echo=True, pty=True)
+    command.run("python -m pytest .", echo=True, pty=True)
 
 
 @task
@@ -97,7 +97,7 @@ Running Sphinx to test the docs building
     command.run("sphinx-build -b html docs docs/_build/html", echo=True, pty=True)
 
 
-@task(pre=[black, isort, flake8, pytest, sphinx])
+@task(pre=[black, isort, lint, pytest, docs])
 def all(
     command,
 ):
