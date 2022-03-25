@@ -6,4 +6,4 @@ Deprecated APIs
    :members:
    :special-members: __call__
    :undoc-members:
-   :show-inheritance:`
+   :show-inheritance:
