@@ -40,7 +40,7 @@
 <!-- BREAKING changes of code or behavior in GRANOLA-->
 
 
-## 0.9.0.rc1
+## 0.9.0
 
 ### Highlights
 
