@@ -35,3 +35,4 @@ testpaths = "granola docs"
 addopts = "--doctest-modules --doctest-glob='*.rst'"
 doctest_optionflags = "NORMALIZE_WHITESPACE"
 norecursedirs = "_build"
+filterwarnings = ["ignore::DeprecationWarning:granola.main", "ignore::DeprecationWarning:invoke"]
