@@ -398,6 +398,9 @@ class Cereal(Serial):
     def _clear_output(self):
         self._next_write = ""
 
+    def _reconfigure_port(self):
+        pass
+
     @property
     def _in_waiting(self):
         return len(self._next_read)
