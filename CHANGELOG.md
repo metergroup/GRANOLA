@@ -39,6 +39,10 @@
 
 <!-- BREAKING changes of code or behavior in GRANOLA-->
 
+## 0.9.1
+
+### Highlights
+- Override reconfigure port for mocked cereal (see https://github.com/metergroup/GRANOLA/pull/37 for more details)
 
 ## 0.9.0
 
