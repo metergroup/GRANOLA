@@ -107,3 +107,15 @@ def test_flush_output(mock_cereal):
 
     # Then write buffer is cleared
     assert mock_cereal._next_write == ""
+
+
+def test_reconfigure_port(mock_cereal):
+    # Given a mock serial device, open the port
+    mock_cereal.open()
+    assert mock_cereal.is_open
+
+    # When an attribute is called that pySerial internally reconfigures the port
+    mock_cereal.baudrate = 57600
+
+    # Then the call is successful
+    assert mock_cereal.baudrate == 57600

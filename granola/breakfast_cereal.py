@@ -338,6 +338,10 @@ class Cereal(Serial):
             Should only be used with pyserial versions >= 3.0"""
             self._clear_output()
 
+        def _reconfigure_port(self):
+            """Bypassing pyserial's reconfigure port"""
+            pass
+
         @property
         def in_waiting(self):
             """mocking pyserial's in_waiting"""
@@ -369,6 +373,10 @@ class Cereal(Serial):
         def outWaiting(self):
             """mocking pyserial's outWaiting"""
             return self._out_waiting
+
+        def _reconfigurePort(self):
+            """Bypassing pyserial's reconfigure port"""
+            pass
 
     @property
     def _is_open(self):
